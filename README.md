@@ -3,9 +3,9 @@ Everyone likes camels and scrabbles
 
 # Rough object sketch
 Game object
-* Objects 
-** Board
-** Player
+* Objects  
+** Board  
+** Player  
 *** Hand (Owned word Tiles )
 ** Word tile pool
 ** Dictionary
