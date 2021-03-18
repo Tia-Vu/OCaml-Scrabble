@@ -1,4 +1,5 @@
-type t = failwith "unimplmeneted"
+(*TODO: Implement something*)
+type t 
 
 let place_tiles = failwith "unimplemented"
 
