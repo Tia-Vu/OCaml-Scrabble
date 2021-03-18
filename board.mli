@@ -7,8 +7,8 @@
 type t
 
 (** TODO: Replace unit with something meaningful 
-    Requires: the input tiles should be legal *)
-val place_tiles : t -> unit -> t
+    Raises: TODO: something if input is illegal (word not in dict || tiles not near current tiles)*)
+val place_tiles : t -> dictionary(?) -> tiles & their positions(?) -> t
 
 (** String represntation of the board*)
 val to_string : t -> string
