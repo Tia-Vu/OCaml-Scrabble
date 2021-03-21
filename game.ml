@@ -1,3 +1,7 @@
+open Board
+open Display
+open Score
+
 (** TODO: This is an incomplete implementation *)
 type dictionary = string list
 (** TODO: This is an incomplete implementation *)
@@ -27,3 +31,7 @@ player_one_plays
   |> 
 
 *)
+let game () = failwith "Unimplemented"
+
+(* Execute the game engine. *)
+let () = game ()
