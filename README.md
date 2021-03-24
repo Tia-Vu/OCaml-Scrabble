@@ -42,3 +42,6 @@ Bonus Rules (?)
 Add bonus point for words (camels, lambda, etc…)
 Game customization
 
+
+# Reference
+dictionary.json and dictionary_compact.json are brought from the [WebstersEnglishDictionary](https://github.com/matthewreagan/WebstersEnglishDictionary) github project
