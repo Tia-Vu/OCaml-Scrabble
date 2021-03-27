@@ -6,8 +6,9 @@ type tile = {
   adjacent_tiles : tile list; (* Adjacent letter tiles - not empty ones*)
 }
 
-(** [itile] is an information tile for the info_board TODO: Bonus should
-    be more sophisticated *)
+(*TODO: Bonus should be more sophisticated *)
+
+(** [itile] is an information tile for the info_board. *)
 type itile = { bonus : int }
 
 type t = {
