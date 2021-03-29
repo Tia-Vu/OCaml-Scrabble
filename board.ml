@@ -81,9 +81,8 @@ let placement_is_legal t word start_coord direction = true
 
 (*still unimplemented*)
 
-(*place_tile [letter] [coord] [tile_board] returns a new tile_board
-  after placing [letter] on the coordinate [coord] on [tile_board].
-  [coord] is in the order [row][col]
+(*place_tile [letter] [coord] [tile_board] places [letter] on the
+  coordinate [coord] on [tile_board]. [coord] is in the order [row][col]
 
   Requires: is a valid placement*)
 let place_tile letter coord tile_board =
@@ -104,7 +103,7 @@ let to_letter_lst word =
   to_letter_lst_h word []
 
 let rec place_tiles_hor letter_lst curr_coord tile_board =
-  let next_coord = (fst curr_coord + 1, snd curr_coord) in
+  let next_coord = (fst curr_coord, snd curr_coord + 1) in
   match letter_lst with
   | [] -> tile_board
   | h :: t ->
@@ -112,7 +111,7 @@ let rec place_tiles_hor letter_lst curr_coord tile_board =
       place_tiles_hor t next_coord tile_board
 
 let rec place_tiles_ver letter_lst curr_coord tile_board =
-  let next_coord = (fst curr_coord, snd curr_coord - 1) in
+  let next_coord = (fst curr_coord - 1, snd curr_coord) in
   match letter_lst with
   | [] -> tile_board
   | h :: t ->
