@@ -6,6 +6,11 @@
 (** The abstract type of values representing boards. *)
 type t
 
+(** The type representing the result of an attempted movement. *)
+type result =
+  | Legal of t
+  | Illegal
+
 (** Initializes an empty board with a dictionary stored with a certain
     json file.*)
 val empty_board : Yojson.Basic.t -> t
