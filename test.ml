@@ -1,7 +1,5 @@
 open OUnit2
 open Board
-open Game
-open Display
 
 (********************************************************************
    Here are some helper functions for your testing of set-like lists. 
@@ -25,7 +23,27 @@ let pp_list pp_elt lst =
   in
   "[" ^ pp_elts lst ^ "]"
 
-let board_tests = []
+(** [board_to_string name input expected_output] constructs an OUnit
+    test named [name] that asserts the quality of [Board.to_str] with
+    [index input]. *)
+let board_to_string_test
+    (name : string)
+    (input : Board.t)
+    (expected_output : string) : test =
+  "board_to_str: " ^ name >:: fun _ ->
+  assert_equal expected_output (Board.to_string input)
+    ~printer:(fun x -> "\n-\n" ^ x ^ "\n-\n")
+
+(********************************************************************
+  End helper functions.
+  ********************************************************************)
+
+let board_tests =
+  [
+    board_to_string_test "Empty 1 x 1 board" (Board.init_board 1) ".";
+    board_to_string_test "Empty 2 x 2 board" (Board.init_board 2)
+      ". .\n. .";
+  ]
 
 let game_tests = []
 
