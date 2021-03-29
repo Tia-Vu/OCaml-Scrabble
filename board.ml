@@ -87,7 +87,7 @@ let placement_is_legal t word start_coord direction = true
 
   Requires: is a valid placement*)
 let place_tile letter coord tile_board =
-  tile_board.(fst coord).(snd coord) <- letter
+  tile_board.(fst coord).(snd coord) <- { letter; coord }
 
 (*to_letter_lst [word] returns [word] converted into a list of the
   letters in the list in the same order. Ex. to_letter_lst "hello"
@@ -103,9 +103,42 @@ let to_letter_lst word =
   in
   to_letter_lst_h word []
 
+let rec place_tiles_hor letter_lst curr_coord tile_board =
+  let next_coord = (fst curr_coord + 1, snd curr_coord) in
+  match letter_lst with
+  | [] -> tile_board
+  | h :: t ->
+      place_tile h curr_coord tile_board;
+      place_tiles_hor t next_coord tile_board
+
+let rec place_tiles_ver letter_lst curr_coord tile_board =
+  let next_coord = (fst curr_coord, snd curr_coord - 1) in
+  match letter_lst with
+  | [] -> tile_board
+  | h :: t ->
+      place_tile h curr_coord tile_board;
+      place_tiles_ver t next_coord tile_board
+
 let place_tiles t word start_coord direction =
   match placement_is_legal t word start_coord direction with
-  | true -> ()
+  | true -> (
+      match direction with
+      | true ->
+          {
+            n = t.n;
+            tile_board =
+              place_tiles_hor (to_letter_lst word) start_coord
+                t.tile_board;
+            info_board = t.info_board;
+          }
+      | false ->
+          {
+            n = t.n;
+            tile_board =
+              place_tiles_ver (to_letter_lst word) start_coord
+                t.tile_board;
+            info_board = t.info_board;
+          } )
   | false -> raise IllegalMove
 
 (*Return a new board from json*)

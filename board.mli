@@ -19,7 +19,7 @@ val empty_board : Yojson.Basic.t -> t
     tiles, move creates valid words, move is on the board) where t is
     the board after playing the move, otherwise raises [IllegalMove]*)
 
-val place_tiles : t -> string -> int * int -> bool -> unit
+val place_tiles : t -> string -> int * int -> bool -> t
 
 (** String represntation of the board*)
 val to_string : t -> string
