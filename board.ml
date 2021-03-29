@@ -25,11 +25,6 @@ type t = {
   (*Take cares of board info n x n (double score) TODO: someday*)
   info_board : itile array array;
 }
-
-type result =
-  | Legal of t
-  | Illegal
-
 let create_tile l x y = { letter = l; coord = (x, y) }
 
 let init_tile () = create_tile '.' (-1) (-1)
@@ -107,8 +102,8 @@ let to_letter_lst word =
 
 let place_tiles t word start_coord direction =
   match placement_is_legal t word start_coord direction with
-  | true -> Legal t (*not yet implemented*)
-  | false -> Illegal
+  | true -> 
+  | false ->
 
 (*Return a new board from json*)
 let from_json json = failwith "unimplemented"

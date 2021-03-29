@@ -6,24 +6,20 @@
 (** The abstract type of values representing boards. *)
 type t
 
-(** The type representing the result of an attempted movement. *)
-type result =
-  | Legal of t
-  | Illegal
-
 (** Initializes an empty board with a dictionary stored with a certain
     json file.*)
 val empty_board : Yojson.Basic.t -> t
 
-(** [place_tiles] takes in a board and a move, and returns a pair of the
-    new board * and the point value that the move was worth. TODO:
-    Replace unit with something meaningful. Raises: TODO: something if
-    input is illegal (word not in dict || tiles not near current tiles)
+(** [place_tiles] takes in a board and a move (word, starting
+    coordinate, direction to place the word), and returns the result of
+    the move
 
-    This method typing is kind of bogus atm, REPLACE later when
-    implementation is in.*)
+    Result is [Legal t] if the move is a valid move in scrabble (move is
+    near current board tiles, move creates valid words, move is on the
+    board) where t is the board after playing the move, otherwise result
+    is [Illegal]*)
 
-val place_tiles : t -> string -> t * int
+val place_tiles : t -> string -> int * int -> bool -> unit
 
 (** String represntation of the board*)
 val to_string : t -> string
