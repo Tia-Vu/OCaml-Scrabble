@@ -10,6 +10,12 @@ type t
     json file.*)
 val empty_board : Yojson.Basic.t -> t
 
+(* TODO: Conflicts with empty_board above - should add dictionary to
+   type t*)
+
+(** Initializes an empty board *)
+val init_board : int -> t
+
 (** [place_tiles] takes in a board and a move, and returns a pair of the
     new board * and the point value that the move was worth. TODO:
     Replace unit with something meaningful. Raises: TODO: something if
