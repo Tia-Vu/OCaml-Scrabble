@@ -2,10 +2,10 @@ open Board
 open Display
 open Score
 
-(** TODO: This is an incomplete implementation *)
+(** TODO: This is an incomplete implementation. Will contain more fiels
+    like scores = Score.t once Score is implemented.*)
 type game_state = {
   board : Board.t;
-  scores : Score.t;
       (* Things to potentially add: hand: ; scores:[0,1,2,] tilepool:
          shuffle (private), draw x tiles (public), is_emtpy,
          initialization *)
@@ -21,42 +21,44 @@ type place_word_command = {
     there are still possible moves to be made, and false if not.*)
 let continue_game game_state = false
 
-(**[input_move] prompts the player for a move and returns it.*)
-let intake_move () =
-  print_endline "Make your move:";
-  print_string "> ";
-  read_line ()
-
 let parse_place_word (s : string) : place_word_command =
   let parsed = String.split_on_char ' ' s in
   match parsed with
-  | w :: x :: y :: dir :: t ->
+  | [ w; x; y; dir ] ->
       {
         word = w;
         start_coord = (int_of_string x, int_of_string y);
         direction =
-          ( if dir = "hor" then true
+          (if dir = "hor" then true
           else false
-            (*TODO if dir is anything else than "hor" then its false*)
-          );
+            (*TODO if dir is anything else than "hor" then its false*));
       }
   | _ -> failwith "Wrong"
+
+(**[input_move] prompts the player for a move in the form of "word x y
+   direction" and returns it.*)
+let intake_move () =
+  print_endline "Make your move:";
+  print_string "> ";
+  parse_place_word (read_line ())
 
 (**[update_game_state] is the new game state after the board and score
    in old state [s] is updated using the passed in [move].*)
 let update_game_state s move =
-  let placed = place_tiles s.board move in
-  { board = fst placed; scores = update_score s.scores (snd placed) }
+  let placed =
+    place_tiles s.board move.word move.start_coord move.direction
+  in
+  { board = placed }
 
 (** [play_game] runs each turn, updating the game state, printing the
-    new board and score, and checks if the game should terminate.*)
+    new board (and score, when implemented), and checks if the game
+    should terminate.*)
 let play_game s =
   let rec pass_turns state continue =
     match continue with
     | true ->
         let new_state = update_game_state state (intake_move ()) in
         print_board new_state.board;
-        print_scores new_state.scores;
         pass_turns new_state (continue_game new_state)
     | false -> print_endline "No more moves can be made"
   in
@@ -75,13 +77,13 @@ let rec dict_prompt () =
   else dict_prompt ()
 
 (**[game] is the main method of the Scrabble game. It initializes an
-   empty board and score and starts the passing of turns, eventually
-   terminating the game when the turns are done.*)
+   empty board (and score, when it is implemented) and starts the
+   passing of turns, eventually terminating the game when the turns are
+   done.*)
 let game () =
   print_intro ();
   let new_board = empty_board (dict_prompt ()) in
-  let new_scores = create () in
-  play_game { board = new_board; scores = new_scores };
+  play_game { board = new_board };
   print_end ();
   exit 0
 
