@@ -1,3 +1,5 @@
+open Yojson.Basic.Util
+
 exception IllegalMove
 
 type tile = {
@@ -26,8 +28,11 @@ type t = {
   tile_board : tile array array;
   (*Take cares of board info n x n (double score) TODO: someday*)
   info_board : itile array array;
-  dict : Yojson.Basic.t;
+  dict : string list;
 }
+
+(*Return a new dictionary from json*)
+let dict_from_json json = json |> to_assoc |> List.map (fun (x, y) -> x)
 
 let create_tile l x y = { letter = l; coord = (x, y) }
 
@@ -48,7 +53,7 @@ let empty_board json_dict n =
     n;
     tile_board = init_tile_board n;
     info_board = init_info_board n;
-    dict = json_dict;
+    dict = dict_from_json json_dict;
   }
 
 (*TODO: Make dictionary for board*)
@@ -84,7 +89,10 @@ let to_string b =
   String.sub entered_str 1 (String.length entered_str - 1)
 
 (** Helper function to check if word is in dictionary*)
-let word_in_dict word dict = ()
+let rec word_in_dict word dict =
+  match dict with
+  | [] -> false
+  | h :: t -> if h = word then true else word_in_dict word t
 
 (*failwith "unimplemnted"*)
 
@@ -161,7 +169,4 @@ let place_word t word start_coord direction =
           } )
   | false -> raise IllegalMove
 
-(*Return a new board from json*)
-let from_json json = () (*failwith "unimplemented"*)
-
-                        (* Score stuff *)
+(* Score stuff *)
