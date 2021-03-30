@@ -1,5 +1,4 @@
 open Game
 
-let main () = game ()
-
-let () = main ()
+(* Execute the game engine. *)
+let () = Game.run ()

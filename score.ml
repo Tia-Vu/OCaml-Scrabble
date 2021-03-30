@@ -1,5 +1,8 @@
 type t = int list list
 
-let create () = failwith "unimplemented"
+let create () = [ [] ] (*PLACEHOLDER*)
 
-let update_score scores score_to_add = failwith "unimplemented"
+(*PLACEHOLDER*)
+let update_score scores score_to_add = scores
+
+let to_string scores = "We don't have scores yet XD"

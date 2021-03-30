@@ -26,6 +26,7 @@ type t = {
   tile_board : tile array array;
   (*Take cares of board info n x n (double score) TODO: someday*)
   info_board : itile array array;
+  dict : Yojson.Basic.t;
 }
 
 let create_tile l x y = { letter = l; coord = (x, y) }
@@ -42,10 +43,15 @@ let init_info_board n =
   let init_row n i = Array.make n (init_itile 0) in
   Array.init n (init_row n)
 
-let init_board n =
-  { n; tile_board = init_tile_board n; info_board = init_info_board n }
+let empty_board json_dict n =
+  {
+    n;
+    tile_board = init_tile_board n;
+    info_board = init_info_board n;
+    dict = json_dict;
+  }
 
-let empty_board j = init_board 1 (*TODO: Placeholder*)
+(*TODO: Make dictionary for board*)
 
 (*get_tile [coord] returns the tile at [coord] Requires: [coord] is in
   the form [row][col]*)
@@ -115,39 +121,41 @@ let to_letter_lst word =
   in
   to_letter_lst_h word []
 
-let rec place_tiles_hor letter_lst curr_coord tile_board =
+let rec place_word_hor letter_lst curr_coord tile_board =
   let next_coord = (fst curr_coord, snd curr_coord + 1) in
   match letter_lst with
   | [] -> tile_board
   | h :: t ->
       place_tile h curr_coord tile_board;
-      place_tiles_hor t next_coord tile_board
+      place_word_hor t next_coord tile_board
 
-let rec place_tiles_ver letter_lst curr_coord tile_board =
+let rec place_word_ver letter_lst curr_coord tile_board =
   let next_coord = (fst curr_coord + 1, snd curr_coord) in
   match letter_lst with
   | [] -> tile_board
   | h :: t ->
       place_tile h curr_coord tile_board;
-      place_tiles_ver t next_coord tile_board
+      place_word_ver t next_coord tile_board
 
-let place_tiles t word start_coord direction =
+let place_word t word start_coord direction =
   match placement_is_legal t word start_coord direction with
   | true -> (
       match direction with
       | true ->
           {
+            t with
             n = t.n;
             tile_board =
-              place_tiles_hor (to_letter_lst word) start_coord
+              place_word_hor (to_letter_lst word) start_coord
                 t.tile_board;
             info_board = t.info_board;
           }
       | false ->
           {
+            t with
             n = t.n;
             tile_board =
-              place_tiles_ver (to_letter_lst word) start_coord
+              place_word_ver (to_letter_lst word) start_coord
                 t.tile_board;
             info_board = t.info_board;
           } )

@@ -21,6 +21,12 @@ type place_word_command = {
     there are still possible moves to be made, and false if not.*)
 let continue_game game_state = false
 
+(**[read_input_move] prompts the player for a move and returns it.*)
+let read_input_move () =
+  print_endline "\nMake your move:";
+  print_string "> ";
+  read_line ()
+
 let parse_place_word (s : string) : place_word_command =
   let parsed = String.split_on_char ' ' s in
   match parsed with
@@ -37,17 +43,20 @@ let parse_place_word (s : string) : place_word_command =
 
 (**[input_move] prompts the player for a move in the form of "word x y
    direction" and returns it.*)
-let intake_move () =
+let input_move () =
   print_endline "Make your move:";
   print_string "> ";
   parse_place_word (read_line ())
 
 (**[update_game_state] is the new game state after the board and score
    in old state [s] is updated using the passed in [move].*)
-let update_game_state s move =
+let update_game_state s input =
+  let cmd = parse_place_word input in
   let placed =
-    place_tiles s.board move.word move.start_coord move.direction
+    place_word s.board cmd.word cmd.start_coord cmd.direction
   in
+  (*OLD: Later when we have scores { board = fst placed; scores =
+    update_score s.scores (snd placed) }*)
   { board = placed }
 
 (** [play_game] runs each turn, updating the game state, printing the
@@ -57,10 +66,10 @@ let play_game s =
   let rec pass_turns state continue =
     match continue with
     | true ->
-        let new_state = update_game_state state (intake_move ()) in
+        let new_state = update_game_state state (read_input_move ()) in
         print_board new_state.board;
         pass_turns new_state (continue_game new_state)
-    | false -> print_endline "No more moves can be made"
+    | false -> print_endline "No more moves can be made."
   in
   pass_turns s true
 
@@ -76,16 +85,16 @@ let rec dict_prompt () =
   if Sys.file_exists file_name then Yojson.Basic.from_file file_name
   else dict_prompt ()
 
-(**[game] is the main method of the Scrabble game. It initializes an
-   empty board (and score, when it is implemented) and starts the
-   passing of turns, eventually terminating the game when the turns are
-   done.*)
-let game () =
+(**[run] is the main method of the Scrabble game. It initializes an
+   empty board and score and starts the passing of turns, eventually
+   terminating the game when the turns are done.*)
+let run () =
   print_intro ();
-  let new_board = empty_board (dict_prompt ()) in
+  let new_board = empty_board (dict_prompt ()) 6 in
+  (*TODO: Replace 6 with user input*)
   play_game { board = new_board };
   print_end ();
   exit 0
 
 (* Execute the game engine. *)
-let () = game ()
+let () = run ()
