@@ -35,12 +35,12 @@ let init_tile () = create_tile '.' (-1) (-1)
 let init_itile b = { bonus = b }
 
 let init_tile_board n =
-  let init_row n = Array.make n (init_tile ()) in
-  Array.make n (init_row n)
+  let init_row n i = Array.make n (init_tile ()) in
+  Array.init n (init_row n)
 
 let init_info_board n =
-  let init_row n = Array.make n (init_itile 0) in
-  Array.make n (init_row n)
+  let init_row n i = Array.make n (init_itile 0) in
+  Array.init n (init_row n)
 
 let init_board n =
   { n; tile_board = init_tile_board n; info_board = init_info_board n }
