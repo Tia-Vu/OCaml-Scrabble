@@ -91,17 +91,37 @@ let to_string b =
 (** Helper function to check if word is in dictionary*)
 let word_in_dict word dict = List.mem word dict
 
-(*failwith "unimplemnted"*)
+(*PLACEHOLDER*)
 
 (** Helper function to check if the tile placement is near a current
     tile*)
-let tiles_near_current_tiles = ()
+let tiles_near_current_tiles t word start_coord direction = true
 
-(*failwith "unimplemnted"*)
+(*PLACEHOLDER*)
+
+(*PLACEHOLDER*)
+
+(** [horizontal_word_of t (x,y)] gives the maximum horizontal superset
+    word that consists of the letter at [(x,y)] on [t]. Example: If
+    (x,y) is at a for . . . p i n e a p p l e . . , returns "pineapple" *)
+let horizontal_word_of t start_coord = "placeholder"
+
+(** [vertical_word_of t (x,y)] gives the maximum vertical superset word
+    that consists of the letter at [(x,y)] on [t]. Similar to
+    [horizontal_word_of t] but for vertical words*)
+let vertical_word_of t start_coord = "placeholder"
+
+let placement_is_legal_hor t word start_coord = true
+
+let placement_is_legal_ver t word start_coord = true
 
 (** Use the two helper functions above to check if a placement is legal*)
 
-let placement_is_legal t word start_coord direction = true
+let placement_is_legal t word start_coord direction =
+  if not (tiles_near_current_tiles t word start_coord direction) then
+    false
+  else if direction then placement_is_legal_hor t word start_coord
+  else placement_is_legal_ver t word start_coord
 
 (*still unimplemented*)
 
