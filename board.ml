@@ -89,37 +89,51 @@ let to_string b =
   String.sub entered_str 1 (String.length entered_str - 1)
 
 (** Helper function to check if word is in dictionary*)
-let word_in_dict word dict = List.mem word dict
+let word_in_dict dict word = List.mem word dict
 
-(*PLACEHOLDER*)
+(** [tiles_occupied t w (x,y) dir] check if there are no tiles on the
+    spots that [word] is expected to be placed on PLACEHOLDER*)
+let tiles_occupied t w (x, y) dir = true
 
 (** Helper function to check if the tile placement is near a current
-    tile*)
+    tile. PLACEHOLDER*)
+let tiles_occupied t word start_coord direction = true
+
 let tiles_near_current_tiles t word start_coord direction = true
 
-(*PLACEHOLDER*)
-
-(*PLACEHOLDER*)
-
-(** [horizontal_word_of t (x,y)] gives the maximum horizontal superset
-    word that consists of the letter at [(x,y)] on [t]. Example: If
-    (x,y) is at a for . . . p i n e a p p l e . . , returns "pineapple" *)
+(** [horizontal_word_of t (x,y) c] gives the maximum horizontal superset
+    word that consists of the letter at [(x,y)] on [t]. Example: If [c]
+    is 'a' and [(x,y)] is at ( ) for ". . . p i n e ( ) p p l e . ." ,
+    it returns "pineapple" PLACHOLDER *)
 let horizontal_word_of t start_coord = "placeholder"
 
 (** [vertical_word_of t (x,y)] gives the maximum vertical superset word
     that consists of the letter at [(x,y)] on [t]. Similar to
-    [horizontal_word_of t] but for vertical words*)
+    [horizontal_word_of t] but for vertical words PLACEHOLDER*)
 let vertical_word_of t start_coord = "placeholder"
 
-let placement_is_legal_hor t word start_coord = true
+(** HORRENDOUS NAME so we will make sure to change it later. Does
+    place_word without legality check PLACEHOLDER*)
+let really_just_place_word t word start_coord dir = ()
+
+let placement_is_legal_hor t word start_coord =
+  let expected_b = really_just_place_word t word start_coord in
+  if
+    not
+      (horizontal_word_of expected_b start_coord |> word_in_dict t.dict)
+  then false
+    (* TODO: For each letter coord., check veritcal_word_of |>
+       word_in_dict*)
+  else true
 
 let placement_is_legal_ver t word start_coord = true
 
 (** Use the two helper functions above to check if a placement is legal*)
 
 let placement_is_legal t word start_coord direction =
-  if not (tiles_near_current_tiles t word start_coord direction) then
-    false
+  if tiles_occupied t word start_coord direction then false
+  else if not (tiles_near_current_tiles t word start_coord direction)
+  then false
   else if direction then placement_is_legal_hor t word start_coord
   else placement_is_legal_ver t word start_coord
 
