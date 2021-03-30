@@ -96,12 +96,19 @@ let check_in_dict dict word =
   if word_in_dict dict word then () else raise IllegalMove
 
 (** [tiles_occupied t w (x,y) dir] check if there are no tiles on the
-    spots that [word] is expected to be placed on PLACEHOLDER*)
+    spots that [word] is expected to be placed on, or else they must be
+    the same letter PLACEHOLDER*)
 let tiles_occupied t w (x, y) dir = true
 
 (** Helper function to check if the tile placement is near a current
     tile. PLACEHOLDER*)
 let tiles_occupied t word start_coord direction = true
+
+(**Helper function to check if tile placement will be on the board*)
+let off_board t word start_coord direction =
+  match direction with
+  | true -> fst start_coord > t.n
+  | false -> snd start_coord > t.n
 
 let tiles_near_current_tiles t word start_coord direction = true
 
@@ -122,7 +129,7 @@ let really_just_place_word t word start_coord dir = ()
 
 let placement_is_legal_hor t word start_coord =
   let expected_b = really_just_place_word t word start_coord in
-  let check_horizontal_is_word =
+  let check_horizontal_is_valid_word =
     horizontal_word_of expected_b start_coord |> check_in_dict t.dict
   in
   let x0, y0 = start_coord in
@@ -139,8 +146,10 @@ let placement_is_legal_ver t word start_coord = true
 (** Use the two helper functions above to check if a placement is legal*)
 
 let placement_is_legal t word start_coord direction =
-  if tiles_occupied t word start_coord direction then false
-  else if not (tiles_near_current_tiles t word start_coord direction)
+  if
+    off_board t word start_coord direction
+    || tiles_occupied t word start_coord direction
+    || not (tiles_near_current_tiles t word start_coord direction)
   then false
   else if direction then placement_is_legal_hor t word start_coord
   else placement_is_legal_ver t word start_coord
