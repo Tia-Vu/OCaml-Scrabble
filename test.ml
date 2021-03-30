@@ -43,6 +43,16 @@ let board_tests =
     board_to_string_test "Empty 1 x 1 board" (Board.init_board 1) ".";
     board_to_string_test "Empty 2 x 2 board" (Board.init_board 2)
       ". .\n. .";
+    board_to_string_test "Place 'c' horizontally on 4 x 4 board"
+      (place_tiles (Board.init_board 4) "c" (0, 0) true)
+      "c . . .\n. . . .\n. . . .\n. . . .";
+    board_to_string_test "Place 'car' horizontally on 4 x 4 board"
+      (place_tiles (Board.init_board 4) "car" (0, 0) true)
+      "c a r .\n. . . .\n. . . .\n. . . .";
+    (*TODO: Fail due to index out of bounds*)
+    board_to_string_test "Place 'car' vertically on 4 x 4 board"
+      (place_tiles (Board.init_board 4) "car" (0, 0) false)
+      "c . . .\na . . .\nr . . .\n. . . .";
   ]
 
 let game_tests = []

@@ -35,18 +35,17 @@ let init_tile () = create_tile '.' (-1) (-1)
 let init_itile b = { bonus = b }
 
 let init_tile_board n =
-  let init_row n = Array.make n (init_tile ()) in
-  Array.make n (init_row n)
+  let init_row n i = Array.make n (init_tile ()) in
+  Array.init n (init_row n)
 
 let init_info_board n =
-  let init_row n = Array.make n (init_itile 0) in
-  Array.make n (init_row n)
+  let init_row n i = Array.make n (init_itile 0) in
+  Array.init n (init_row n)
 
 let init_board n =
   { n; tile_board = init_tile_board n; info_board = init_info_board n }
 
 let empty_board j = init_board 1 (*TODO: Placeholder*)
-
 
 (*get_tile [coord] returns the tile at [coord] Requires: [coord] is in
   the form [row][col]*)
@@ -62,22 +61,18 @@ let get_adjacent_tiles tile tile_board =
   let col = snd tile.coord in
   {
     left = get_tile (row, col - 1) tile_board;
-    up = get_tile (row + 1, col) tile_board;
+    up = get_tile (row - 1, col) tile_board;
     right = get_tile (row, col + 1) tile_board;
-    down = get_tile (row - 1, col) tile_board;
+    down = get_tile (row + 1, col) tile_board;
   }
-
 
 let row_to_string row =
   let add_letter str t = str ^ " " ^ Char.escaped t.letter in
   let spaced_str = Array.fold_left add_letter "" row in
   String.sub spaced_str 1 (String.length spaced_str - 1)
 
-(*Array.fold_left add_letter "" row*)
-
 let to_string b =
   let rows = Array.map row_to_string b.tile_board in
-  (*String.sub (Array.fold_left ( ^ ) "" rows) 1 (b.n - 1)*)
   let add_row str row = str ^ "\n" ^ row in
   let entered_str = Array.fold_left add_row "" rows in
   String.sub entered_str 1 (String.length entered_str - 1)
@@ -129,7 +124,7 @@ let rec place_tiles_hor letter_lst curr_coord tile_board =
       place_tiles_hor t next_coord tile_board
 
 let rec place_tiles_ver letter_lst curr_coord tile_board =
-  let next_coord = (fst curr_coord - 1, snd curr_coord) in
+  let next_coord = (fst curr_coord + 1, snd curr_coord) in
   match letter_lst with
   | [] -> tile_board
   | h :: t ->
@@ -157,7 +152,6 @@ let place_tiles t word start_coord direction =
             info_board = t.info_board;
           } )
   | false -> raise IllegalMove
-
 
 (*Return a new board from json*)
 let from_json json = () (*failwith "unimplemented"*)
