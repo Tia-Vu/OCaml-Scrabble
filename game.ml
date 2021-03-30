@@ -2,10 +2,10 @@ open Board
 open Display
 open Score
 
-(** TODO: This is an incomplete implementation *)
+(** TODO: This is an incomplete implementation. Will contain more fiels
+    like scores = Score.t once Score is implemented.*)
 type game_state = {
   board : Board.t;
-  scores : Score.t;
       (* Things to potentially add: hand: ; scores:[0,1,2,] tilepool:
          shuffle (private), draw x tiles (public), is_emtpy,
          initialization *)
@@ -23,24 +23,30 @@ let continue_game game_state = false
 
 (**[read_input_move] prompts the player for a move and returns it.*)
 let read_input_move () =
-  print_endline "Make your move:";
+  print_endline "\nMake your move:";
   print_string "> ";
   read_line ()
 
 let parse_place_word (s : string) : place_word_command =
   let parsed = String.split_on_char ' ' s in
   match parsed with
-  | w :: x :: y :: dir :: t ->
+  | [ w; x; y; dir ] ->
       {
         word = w;
         start_coord = (int_of_string x, int_of_string y);
         direction =
-          ( if dir = "hor" then true
+          (if dir = "hor" then true
           else false
-            (*TODO if dir is anything else than "hor" then its false*)
-          );
+            (*TODO if dir is anything else than "hor" then its false*));
       }
   | _ -> failwith "Wrong"
+
+(**[input_move] prompts the player for a move in the form of "word x y
+   direction" and returns it.*)
+let input_move () =
+  print_endline "Make your move:";
+  print_string "> ";
+  parse_place_word (read_line ())
 
 (**[update_game_state] is the new game state after the board and score
    in old state [s] is updated using the passed in [move].*)
@@ -51,19 +57,20 @@ let update_game_state s input =
   in
   (*OLD: Later when we have scores { board = fst placed; scores =
     update_score s.scores (snd placed) }*)
-  { s with board = placed }
+  { board = placed }
+
 
 (** [play_game] runs each turn, updating the game state, printing the
-    new board and score, and checks if the game should terminate.*)
+    new board (and score, when implemented), and checks if the game
+    should terminate.*)
 let play_game s =
   let rec pass_turns state continue =
     match continue with
     | true ->
         let new_state = update_game_state state (read_input_move ()) in
         print_board new_state.board;
-        print_scores new_state.scores;
         pass_turns new_state (continue_game new_state)
-    | false -> print_endline "No more moves can be made"
+    | false -> print_endline "No more moves can be made."
   in
   pass_turns s true
 
@@ -86,8 +93,8 @@ let run () =
   print_intro ();
   let new_board = empty_board (dict_prompt ()) 6 in
   (*TODO: Replace 6 with user input*)
-  let new_scores = create () in
-  play_game { board = new_board; scores = new_scores };
+  play_game { board = new_board };
+
   print_end ();
   exit 0
 
