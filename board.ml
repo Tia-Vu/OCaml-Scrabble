@@ -71,11 +71,8 @@ let row_to_string row =
   let spaced_str = Array.fold_left add_letter "" row in
   String.sub spaced_str 1 (String.length spaced_str - 1)
 
-(*Array.fold_left add_letter "" row*)
-
 let to_string b =
   let rows = Array.map row_to_string b.tile_board in
-  (*String.sub (Array.fold_left ( ^ ) "" rows) 1 (b.n - 1)*)
   let add_row str row = str ^ "\n" ^ row in
   let entered_str = Array.fold_left add_row "" rows in
   String.sub entered_str 1 (String.length entered_str - 1)
