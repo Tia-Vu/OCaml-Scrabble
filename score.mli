@@ -9,3 +9,5 @@ type t
 val update_score : t -> int -> t
 
 val create : unit -> t
+
+val to_string : t -> string

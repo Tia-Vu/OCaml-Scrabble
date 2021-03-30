@@ -1,4 +1,5 @@
-(** Might be able to leave this blank too?*)
+open Board
+open Score
 
 val print_board : Board.t -> unit
 
