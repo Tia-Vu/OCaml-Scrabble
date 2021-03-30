@@ -89,10 +89,7 @@ let to_string b =
   String.sub entered_str 1 (String.length entered_str - 1)
 
 (** Helper function to check if word is in dictionary*)
-let rec word_in_dict word dict =
-  match dict with
-  | [] -> false
-  | h :: t -> if h = word then true else word_in_dict word t
+let word_in_dict word dict = List.mem word dict
 
 (*failwith "unimplemnted"*)
 
