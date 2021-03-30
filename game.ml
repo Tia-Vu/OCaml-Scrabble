@@ -59,6 +59,7 @@ let update_game_state s input =
     update_score s.scores (snd placed) }*)
   { board = placed }
 
+
 (** [play_game] runs each turn, updating the game state, printing the
     new board (and score, when implemented), and checks if the game
     should terminate.*)
@@ -93,6 +94,7 @@ let run () =
   let new_board = empty_board (dict_prompt ()) 6 in
   (*TODO: Replace 6 with user input*)
   play_game { board = new_board };
+
   print_end ();
   exit 0
 
