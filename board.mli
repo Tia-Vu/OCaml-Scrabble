@@ -11,14 +11,8 @@ exception IllegalMove
 
 (** Initializes an empty board with a dictionary stored with a certain
     json file.*)
-val empty_board : Yojson.Basic.t -> t
+val empty_board : Yojson.Basic.t -> int -> t
 
-
-(* TODO: Conflicts with empty_board above - should add dictionary to
-   type t*)
-
-(** Initializes an empty board *)
-val init_board : int -> t
 (** [place_tiles] takes in a board and a move (word, starting
     coordinate, direction to place the word - [true] if horizontal,
     [false] if vertical), and returns the board after placing the word
@@ -26,7 +20,6 @@ val init_board : int -> t
     current board tiles, move creates valid words, move is on the board)
     where t is the board after playing the move, otherwise raises
     [IllegalMove]*)
-
 
 val place_tiles : t -> string -> int * int -> bool -> t
 

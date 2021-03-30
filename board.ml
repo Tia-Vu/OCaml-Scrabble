@@ -26,6 +26,7 @@ type t = {
   tile_board : tile array array;
   (*Take cares of board info n x n (double score) TODO: someday*)
   info_board : itile array array;
+  dict : Yojson.Basic.t;
 }
 
 let create_tile l x y = { letter = l; coord = (x, y) }
@@ -42,10 +43,15 @@ let init_info_board n =
   let init_row n i = Array.make n (init_itile 0) in
   Array.init n (init_row n)
 
-let init_board n =
-  { n; tile_board = init_tile_board n; info_board = init_info_board n }
+let empty_board json_dict n =
+  {
+    n;
+    tile_board = init_tile_board n;
+    info_board = init_info_board n;
+    dict = json_dict;
+  }
 
-let empty_board j = init_board 1 (*TODO: Placeholder*)
+(*TODO: Make dictionary for board*)
 
 (*get_tile [coord] returns the tile at [coord] Requires: [coord] is in
   the form [row][col]*)
@@ -137,6 +143,7 @@ let place_tiles t word start_coord direction =
       match direction with
       | true ->
           {
+            t with
             n = t.n;
             tile_board =
               place_tiles_hor (to_letter_lst word) start_coord
@@ -145,6 +152,7 @@ let place_tiles t word start_coord direction =
           }
       | false ->
           {
+            t with
             n = t.n;
             tile_board =
               place_tiles_ver (to_letter_lst word) start_coord

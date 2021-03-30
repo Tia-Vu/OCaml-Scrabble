@@ -3,7 +3,7 @@
 
 let print_board board = print_endline (Board.to_string board)
 
-let print_scores scores = failwith "unimplemented"
+let print_scores scores = print_endline (Score.to_string scores)
 
 let print_intro () = print_endline "This is OCaml Scrabble!"
 
