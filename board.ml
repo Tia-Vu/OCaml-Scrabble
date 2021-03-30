@@ -47,7 +47,6 @@ let init_board n =
 
 let empty_board j = init_board 1 (*TODO: Placeholder*)
 
-
 (*get_tile [coord] returns the tile at [coord] Requires: [coord] is in
   the form [row][col]*)
 let get_tile coord tile_board =
@@ -62,11 +61,10 @@ let get_adjacent_tiles tile tile_board =
   let col = snd tile.coord in
   {
     left = get_tile (row, col - 1) tile_board;
-    up = get_tile (row + 1, col) tile_board;
+    up = get_tile (row - 1, col) tile_board;
     right = get_tile (row, col + 1) tile_board;
-    down = get_tile (row - 1, col) tile_board;
+    down = get_tile (row + 1, col) tile_board;
   }
-
 
 let row_to_string row =
   let add_letter str t = str ^ " " ^ Char.escaped t.letter in
@@ -129,7 +127,7 @@ let rec place_tiles_hor letter_lst curr_coord tile_board =
       place_tiles_hor t next_coord tile_board
 
 let rec place_tiles_ver letter_lst curr_coord tile_board =
-  let next_coord = (fst curr_coord - 1, snd curr_coord) in
+  let next_coord = (fst curr_coord + 1, snd curr_coord) in
   match letter_lst with
   | [] -> tile_board
   | h :: t ->
@@ -157,7 +155,6 @@ let place_tiles t word start_coord direction =
             info_board = t.info_board;
           } )
   | false -> raise IllegalMove
-
 
 (*Return a new board from json*)
 let from_json json = () (*failwith "unimplemented"*)
