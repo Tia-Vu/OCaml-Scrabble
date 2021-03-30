@@ -11,6 +11,12 @@ type game_state = {
          initialization *)
 }
 
+type place_word_command = {
+  word : string;
+  start_coord : int * int;
+  direction : bool;
+}
+
 (** Checks if there are any possible moves. [continue_game] is true if
     there are still possible moves to be made, and false if not.*)
 let continue_game game_state = false
@@ -20,6 +26,21 @@ let intake_move () =
   print_endline "Make your move:";
   print_string "> ";
   read_line ()
+
+let parse_place_word (s : string) : place_word_command =
+  let parsed = String.split_on_char ' ' s in
+  match parsed with
+  | w :: x :: y :: dir :: t ->
+      {
+        word = w;
+        start_coord = (int_of_string x, int_of_string y);
+        direction =
+          ( if dir = "hor" then true
+          else false
+            (*TODO if dir is anything else than "hor" then its false*)
+          );
+      }
+  | _ -> failwith "Wrong"
 
 (**[update_game_state] is the new game state after the board and score
    in old state [s] is updated using the passed in [move].*)
