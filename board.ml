@@ -47,7 +47,6 @@ let init_board n =
 
 let empty_board j = init_board 1 (*TODO: Placeholder*)
 
-
 (*get_tile [coord] returns the tile at [coord] Requires: [coord] is in
   the form [row][col]*)
 let get_tile coord tile_board =
@@ -67,17 +66,13 @@ let get_adjacent_tiles tile tile_board =
     down = get_tile (row - 1, col) tile_board;
   }
 
-
 let row_to_string row =
   let add_letter str t = str ^ " " ^ Char.escaped t.letter in
   let spaced_str = Array.fold_left add_letter "" row in
   String.sub spaced_str 1 (String.length spaced_str - 1)
 
-(*Array.fold_left add_letter "" row*)
-
 let to_string b =
   let rows = Array.map row_to_string b.tile_board in
-  (*String.sub (Array.fold_left ( ^ ) "" rows) 1 (b.n - 1)*)
   let add_row str row = str ^ "\n" ^ row in
   let entered_str = Array.fold_left add_row "" rows in
   String.sub entered_str 1 (String.length entered_str - 1)
@@ -157,7 +152,6 @@ let place_tiles t word start_coord direction =
             info_board = t.info_board;
           } )
   | false -> raise IllegalMove
-
 
 (*Return a new board from json*)
 let from_json json = () (*failwith "unimplemented"*)
