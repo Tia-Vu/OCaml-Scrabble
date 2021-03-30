@@ -106,9 +106,11 @@ let tiles_occupied t word start_coord direction = true
 
 (**Helper function to check if tile placement will be on the board*)
 let off_board t word start_coord direction =
+  let row = fst start_coord in
+  let col = snd start_coord in
   match direction with
-  | true -> fst start_coord > t.n
-  | false -> snd start_coord > t.n
+  | true -> row + String.length word > t.n || row < 0
+  | false -> col + String.length word > t.n || col < 0
 
 let tiles_near_current_tiles t word start_coord direction = true
 
