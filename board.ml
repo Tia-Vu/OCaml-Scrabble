@@ -105,10 +105,10 @@ let tiles_occupied t word start_coord direction = true
 
 let tiles_near_current_tiles t word start_coord direction = true
 
-(** [horizontal_word_of t (x,y) c] gives the maximum horizontal superset
-    word that consists of the letter at [(x,y)] on [t]. Example: If [c]
-    is 'a' and [(x,y)] is at ( ) for ". . . p i n e ( ) p p l e . ." ,
-    it returns "pineapple" PLACHOLDER *)
+(** [horizontal_word_of t (x,y)] gives the maximum horizontal superset
+    word that consists of the letter at [(x,y)] on [t]. Example: If
+    [(x,y)] is at 'a' for ". . . p i n e a p p l e . ." , it returns
+    "pineapple" PLACHOLDER *)
 let horizontal_word_of t start_coord = "placeholder"
 
 (** [vertical_word_of t (x,y)] gives the maximum vertical superset word
@@ -122,7 +122,7 @@ let really_just_place_word t word start_coord dir = ()
 
 let placement_is_legal_hor t word start_coord =
   let expected_b = really_just_place_word t word start_coord in
-  let check_horizontal_is_word =
+  let check_horizontal_is_valid_word =
     horizontal_word_of expected_b start_coord |> check_in_dict t.dict
   in
   let x0, y0 = start_coord in
