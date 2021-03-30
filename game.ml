@@ -47,7 +47,7 @@ let parse_place_word (s : string) : place_word_command =
 let update_game_state s input =
   let cmd = parse_place_word input in
   let placed =
-    place_tiles s.board cmd.word cmd.start_coord cmd.direction
+    place_word s.board cmd.word cmd.start_coord cmd.direction
   in
   (*OLD: Later when we have scores { board = fst placed; scores =
     update_score s.scores (snd placed) }*)
