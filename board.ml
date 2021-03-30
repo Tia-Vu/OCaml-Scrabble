@@ -91,6 +91,10 @@ let to_string b =
 (** Helper function to check if word is in dictionary*)
 let word_in_dict dict word = List.mem word dict
 
+(** Helper function to raise Error if word is not in dictionary*)
+let check_in_dict dict word =
+  if word_in_dict dict word then () else raise IllegalMove
+
 (** [tiles_occupied t w (x,y) dir] check if there are no tiles on the
     spots that [word] is expected to be placed on PLACEHOLDER*)
 let tiles_occupied t w (x, y) dir = true
@@ -118,13 +122,17 @@ let really_just_place_word t word start_coord dir = ()
 
 let placement_is_legal_hor t word start_coord =
   let expected_b = really_just_place_word t word start_coord in
-  if
-    not
-      (horizontal_word_of expected_b start_coord |> word_in_dict t.dict)
-  then false
-    (* TODO: For each letter coord., check veritcal_word_of |>
-       word_in_dict*)
-  else true
+  let check_horizontal_is_word =
+    horizontal_word_of expected_b start_coord |> check_in_dict t.dict
+  in
+  let x0, y0 = start_coord in
+  let l = String.length word in
+  let check_vertical_for_each_letter =
+    for x = x0 to x0 + l do
+      vertical_word_of expected_b (x, y0) |> check_in_dict t.dict
+    done
+  in
+  true
 
 let placement_is_legal_ver t word start_coord = true
 
