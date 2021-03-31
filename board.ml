@@ -125,39 +125,6 @@ let horizontal_word_of t start_coord = "placeholder"
     [horizontal_word_of t] but for vertical words PLACEHOLDER*)
 let vertical_word_of t start_coord = "placeholder"
 
-(** HORRENDOUS NAME so we will make sure to change it later. Does
-    place_word without legality check PLACEHOLDER*)
-let really_just_place_word t word start_coord dir = ()
-
-let placement_is_legal_hor t word start_coord =
-  let expected_b = really_just_place_word t word start_coord in
-  let check_horizontal_is_valid_word =
-    horizontal_word_of expected_b start_coord |> check_in_dict t.dict
-  in
-  let x0, y0 = start_coord in
-  let l = String.length word in
-  let check_vertical_for_each_letter =
-    for x = x0 to x0 + l do
-      vertical_word_of expected_b (x, y0) |> check_in_dict t.dict
-    done
-  in
-  true
-
-let placement_is_legal_ver t word start_coord = true
-
-(** Use the two helper functions above to check if a placement is legal*)
-
-let placement_is_legal t word start_coord direction =
-  if
-    off_board t word start_coord direction
-    || tiles_occupied t word start_coord direction
-    || not (tiles_near_current_tiles t word start_coord direction)
-  then false
-  else if direction then placement_is_legal_hor t word start_coord
-  else placement_is_legal_ver t word start_coord
-
-(*still unimplemented*)
-
 (*place_tile [letter] [coord] [tile_board] places [letter] on the
   coordinate [coord] on [tile_board]. [coord] is in the order [row][col]
 
@@ -195,28 +162,59 @@ let rec place_word_ver letter_lst curr_coord tile_board =
       place_tile h curr_coord tile_board;
       place_word_ver t next_coord tile_board
 
+(** HORRENDOUS NAME so we will make sure to change it later. Does
+    place_word without legality check PLACEHOLDER*)
+let place_word_no_validation t word start_coord dir =
+  match dir with
+  | true ->
+      {
+        t with
+        n = t.n;
+        tile_board =
+          place_word_hor (to_letter_lst word) start_coord t.tile_board;
+        info_board = t.info_board;
+      }
+  | false ->
+      {
+        t with
+        n = t.n;
+        tile_board =
+          place_word_ver (to_letter_lst word) start_coord t.tile_board;
+        info_board = t.info_board;
+      }
+
+let placement_is_legal_hor t word start_coord =
+  let expected_b = place_word_no_validation t word start_coord in
+  let check_horizontal_is_valid_word =
+    horizontal_word_of expected_b start_coord |> check_in_dict t.dict
+  in
+  let x0, y0 = start_coord in
+  let l = String.length word in
+  let check_vertical_for_each_letter =
+    for x = x0 to x0 + l do
+      vertical_word_of expected_b (x, y0) |> check_in_dict t.dict
+    done
+  in
+  true
+
+let placement_is_legal_ver t word start_coord = true
+
+(** Use the two helper functions above to check if a placement is legal*)
+
+let placement_is_legal t word start_coord direction =
+  if
+    off_board t word start_coord direction
+    || tiles_occupied t word start_coord direction
+    || not (tiles_near_current_tiles t word start_coord direction)
+  then false
+  else if direction then placement_is_legal_hor t word start_coord
+  else placement_is_legal_ver t word start_coord
+
+(*still unimplemented*)
+
 let place_word t word start_coord direction =
   match placement_is_legal t word start_coord direction with
-  | true -> (
-      match direction with
-      | true ->
-          {
-            t with
-            n = t.n;
-            tile_board =
-              place_word_hor (to_letter_lst word) start_coord
-                t.tile_board;
-            info_board = t.info_board;
-          }
-      | false ->
-          {
-            t with
-            n = t.n;
-            tile_board =
-              place_word_ver (to_letter_lst word) start_coord
-                t.tile_board;
-            info_board = t.info_board;
-          } )
+  | true -> place_word_no_validation t word start_coord direction
   | false -> raise IllegalMove
 
 (* Score stuff *)
