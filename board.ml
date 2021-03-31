@@ -101,15 +101,17 @@ let tile_occupied tle = tle.letter = '.'
 (** [tiles_occupied t w (x,y) dir] check if there are no tiles on the
     spots that [word] is expected to be placed on, or else they must be
     the same letter PLACEHOLDER*)
-let tiles_occupied t w (x, y) dir = false
+let tiles_occupied t w (x, y) dir = true
 
 (**Helper function to check if tile placement will be on the board*)
-let off_board t word (row, col) direction =
+let off_board t word start_coord direction =
+  let row = fst start_coord in
+  let col = snd start_coord in
   match direction with
   | true -> row + String.length word > t.n || row < 0
   | false -> col + String.length word > t.n || col < 0
 
-let tiles_near_current_tiles t word (row, col) direction = false
+let tiles_near_current_tiles t word start_coord direction = true
 
 (* [word_start_hor t start_coord] is the starting x coordinate of the
    horizontal word that is a superset of the tile on [start_coord]*)
@@ -174,8 +176,8 @@ let vertical_word_of t start_coord =
   coordinate [coord] on [tile_board]. [coord] is in the order [row][col]
 
   Requires: is a valid placement*)
-let place_tile letter (row, col) tile_board =
-  tile_board.(row).(col) <- { letter; coord = (row, col) }
+let place_tile letter coord tile_board =
+  tile_board.(fst coord).(snd coord) <- { letter; coord }
 
 (*to_letter_lst [word] returns [word] converted into a list of the
   letters in the list in the same order. Ex. to_letter_lst "hello"
@@ -209,14 +211,14 @@ let rec place_word_ver letter_lst curr_coord tile_board =
 
 (** [place_word_no_validation t w (x,y) dir] places word without
     validation check*)
-let place_word_no_validation t word (row, col) dir =
+let place_word_no_validation t word start_coord dir =
   match dir with
   | true ->
       {
         t with
         n = t.n;
         tile_board =
-          place_word_hor (to_letter_lst word) (row, col) t.tile_board;
+          place_word_hor (to_letter_lst word) start_coord t.tile_board;
         info_board = t.info_board;
       }
   | false ->
@@ -224,7 +226,7 @@ let place_word_no_validation t word (row, col) dir =
         t with
         n = t.n;
         tile_board =
-          place_word_ver (to_letter_lst word) (row, col) t.tile_board;
+          place_word_ver (to_letter_lst word) start_coord t.tile_board;
         info_board = t.info_board;
       }
 
@@ -259,13 +261,14 @@ let placement_is_legal_ver t word start_coord =
   true
 
 (** Check if a placement is legal*)
-let placement_is_legal t word start_coord direction = true
-
-(* if off_board t word start_coord direction || tiles_occupied t word
-   start_coord direction || not (tiles_near_current_tiles t word
-   start_coord direction) then false else if direction then
-   placement_is_legal_hor t word start_coord else placement_is_legal_ver
-   t word start_coord *)
+let placement_is_legal t word start_coord direction =
+  if
+    off_board t word start_coord direction
+    || tiles_occupied t word start_coord direction
+    || not (tiles_near_current_tiles t word start_coord direction)
+  then false
+  else if direction then placement_is_legal_hor t word start_coord
+  else placement_is_legal_ver t word start_coord
 
 (*still unimplemented*)
 
