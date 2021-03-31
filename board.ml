@@ -145,7 +145,17 @@ let off_board t word (row, col) direction =
   | true -> row + String.length word > t.n || row < 0
   | false -> col + String.length word > t.n || col < 0
 
-let tiles_near_current_tiles t word (row, col) direction = true
+let tiles_near_current_tile tile_board (row, col) =
+  let adjacent =
+    get_adjacent_tiles (get_tile (row, col) tile_board) tile_board
+  in
+  not
+    ( adjacent.left.letter = '.'
+    && adjacent.right.letter = '.'
+    && adjacent.up.letter = '.'
+    && adjacent.down.letter = '.' )
+
+let tiles_near_current_tiles t word (row, col) direction = ()
 
 (* [word_start_hor t start_coord] is the starting x coordinate of the
    horizontal word that is a superset of the tile on [start_coord]*)
