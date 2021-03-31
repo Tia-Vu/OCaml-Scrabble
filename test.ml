@@ -71,7 +71,7 @@ let board_tests =
       "c a r .\n. . . .\n. . . .\n. . . .";
     board_to_string_test "Place 'car' vertically on 4 x 4 board"
       (place_word (Board.empty_board dict 4) "car" (0, 0) false)
-      "c . . .\na . . .\nr . . .\n. . . . ";
+      "c . . .\na . . .\nr . . .\n. . . .";
   ]
 
 let game_tests = []
