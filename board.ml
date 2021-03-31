@@ -152,11 +152,10 @@ let tiles_near_current_tile tile_board (row, col) =
   let adjacent =
     get_adjacent_tiles (get_tile (row, col) tile_board) tile_board
   in
-  not
-    ( adjacent.left.letter = '.'
-    && adjacent.right.letter = '.'
-    && adjacent.up.letter = '.'
-    && adjacent.down.letter = '.' )
+  adjacent.left.letter <> '.'
+  && adjacent.right.letter <> '.'
+  && adjacent.up.letter <> '.'
+  && adjacent.down.letter <> '.'
 
 (**[tiles_near_current_tiles] t idx (row,col) dir] gives whether there
    are tiles adjacent to the tiles starting at the tile at [(row,col)]
