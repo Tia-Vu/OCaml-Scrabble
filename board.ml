@@ -60,10 +60,7 @@ let empty_board json_dict n =
 
 (*get_tile [coord] returns the tile at [coord] Requires: [coord] is in
   the form [row][col]*)
-let get_tile coord tile_board =
-  let row = fst coord in
-  let col = snd coord in
-  tile_board.(row).(col)
+let get_tile (row, col) tile_board = tile_board.(row).(col)
 
 (*get_adacent_tiles [tile] returns the adjacent tiles starting with the
   tile to the left and going clockwise*)
@@ -95,43 +92,40 @@ let word_in_dict dict word = List.mem word dict
 let check_in_dict dict word =
   if word_in_dict dict word then () else raise IllegalMove
 
-(** [tile_occupied tle] checks is [tle] has a letter. *)
-let tile_occupied tle = tle.letter = '.'
-
 (** [tiles_occupied t w (x,y) dir] check if there are no tiles on the
     spots that [word] is expected to be placed on, or else they must be
     the same letter PLACEHOLDER*)
 let tiles_occupied t w (x, y) dir = true
 
+(** Helper function to check if the tile placement is near a current
+    tile. PLACEHOLDER*)
+let tiles_occupied t word start_coord direction = true
+
 (**Helper function to check if tile placement will be on the board*)
-let off_board t word start_coord direction =
-  let row = fst start_coord in
-  let col = snd start_coord in
+let off_board t word (row, col) direction =
   match direction with
   | true -> row + String.length word > t.n || row < 0
   | false -> col + String.length word > t.n || col < 0
 
 let tiles_near_current_tiles t word start_coord direction = true
 
-(*PLACEHOLDER*)
-let word_start_hor t start_coord =
-  let x0, y0 = start_coord in
-  x0
+(** [get_word_hor t (x,y)] gives the horizontal word starting at [(x,y)] *)
+let get_word_hor t (row, col) = ()
 
-(** [horizontal_word_of t (x,y)] gives the maximum horizontal superset
-    word that consists of the letter at [(x,y)] on [t]. Example: If
-    [(x,y)] is at 'a' for ". . . p i n e a p p l e . ." , it returns
-    "pineapple" PLACHOLDER *)
-let horizontal_word_of t start_coord =
-  let x0 = word_start_hor t start_coord in
-  let _, y = start_coord in
-  let b = t.tile_board in
-  let _ =
-    while b.(x0).(y) |> tile_occupied do
-      ()
-    done
-  in
-  "placeholder"
+(**[leftmost_connected_tile] gives the leftmost connected tile given a
+   starting tile at (x,y)*)
+let rec leftmost_connected_tile t (row, col) =
+  let tile = get_tile (row, col) t.tile_board in
+  match tile.letter with
+  | '.' -> get_tile (row, col + 1) t.tile_board
+  | _ ->
+      if col = 0 then tile else leftmost_connected_tile t (row, col - 1)
+
+(** [horizontal_word_of t (row,col)] gives the maximum horizontal
+    superset word that consists of the letter at [(row,col)] on [t].
+    Example: If [(row,col)] is at 'a' for ". . . p i n e a p p l e . ."
+    , it returns "pineapple" PLACHOLDER *)
+let rec horizontal_word_of t (row, col) = ()
 
 (** [vertical_word_of t (x,y)] gives the maximum vertical superset word
     that consists of the letter at [(x,y)] on [t]. Similar to
@@ -142,8 +136,8 @@ let vertical_word_of t start_coord = "placeholder"
   coordinate [coord] on [tile_board]. [coord] is in the order [row][col]
 
   Requires: is a valid placement*)
-let place_tile letter coord tile_board =
-  tile_board.(fst coord).(snd coord) <- { letter; coord }
+let place_tile letter (row, col) tile_board =
+  tile_board.(row).(col) <- { letter; coord = (row, col) }
 
 (*to_letter_lst [word] returns [word] converted into a list of the
   letters in the list in the same order. Ex. to_letter_lst "hello"
@@ -175,8 +169,8 @@ let rec place_word_ver letter_lst curr_coord tile_board =
       place_tile h curr_coord tile_board;
       place_word_ver t next_coord tile_board
 
-(** [place_word_no_validation t w (x,y) dir] places word without
-    validation check*)
+(** HORRENDOUS NAME so we will make sure to change it later. Does
+    place_word without legality check PLACEHOLDER*)
 let place_word_no_validation t word start_coord dir =
   match dir with
   | true ->
@@ -197,15 +191,16 @@ let place_word_no_validation t word start_coord dir =
       }
 
 let placement_is_legal_hor t word start_coord =
-  let expected_t = place_word_no_validation t word start_coord true in
+  let expected_b = place_word_no_validation t word start_coord in
   let check_horizontal_is_valid_word =
-    horizontal_word_of expected_t start_coord |> check_in_dict t.dict
+    horizontal_word_of expected_b start_coord |> check_in_dict t.dict
   in
   let x0, y0 = start_coord in
   let l = String.length word in
+
   let check_vertical_for_each_letter =
     for x = x0 to x0 + l do
-      vertical_word_of expected_t (x, y0) |> check_in_dict t.dict
+      vertical_word_of expected_b (x, y0) |> check_in_dict t.dict
     done
   in
   true
