@@ -145,6 +145,9 @@ let off_board t word (row, col) direction =
   | true -> row + String.length word > t.n || row < 0
   | false -> col + String.length word > t.n || col < 0
 
+(**[tiles_near_current_tile] gives whether the current tile at
+   [(row,col)] has any tiles adjacent to it*)
+
 let tiles_near_current_tile tile_board (row, col) =
   let adjacent =
     get_adjacent_tiles (get_tile (row, col) tile_board) tile_board
@@ -155,7 +158,21 @@ let tiles_near_current_tile tile_board (row, col) =
     && adjacent.up.letter = '.'
     && adjacent.down.letter = '.' )
 
-let tiles_near_current_tiles t word (row, col) direction = ()
+(**[tiles_near_current_tiles] t idx (row,col) dir] gives whether there
+   are tiles adjacent to the tiles starting at the tile at [(row,col)]
+   and going [idx] in the direction [dir] (horizontal if true and
+   vertical if false)
+
+   Precondition: there is a tile at [(row,col)] all the way to
+   [(row,col)] + idx in the direction [dir]*)
+let rec tiles_near_current_tiles t idx (row, col) dir =
+  match idx with
+  | 0 -> false
+  | _ ->
+      if tiles_near_current_tile t.tile_board (row, col) then true
+      else if dir then
+        tiles_near_current_tiles t (idx - 1) (row, col + 1) dir
+      else tiles_near_current_tiles t (idx - 1) (row + 1, col) dir
 
 (* [word_start_hor t start_coord] is the starting x coordinate of the
    horizontal word that is a superset of the tile on [start_coord]*)
@@ -295,7 +312,9 @@ let placement_is_legal t word start_coord direction =
   if
     off_board t word start_coord direction
     || tiles_occupied t word start_coord direction
-    || not (tiles_near_current_tiles t word start_coord direction)
+    || not
+         (tiles_near_current_tiles t (String.length word) start_coord
+            direction)
   then false
   else if direction then placement_is_legal_hor t word start_coord
   else placement_is_legal_ver t word start_coord
