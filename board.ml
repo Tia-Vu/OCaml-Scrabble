@@ -109,28 +109,64 @@ let off_board t word (row, col) direction =
 
 let tiles_near_current_tiles t word start_coord direction = true
 
-(** [get_word_hor t (x,y)] gives the horizontal word starting at [(x,y)] *)
-let get_word_hor t (row, col) = ()
+(* [word_start_hor t start_coord] is the starting x coordinate of the
+   horizontal word that is a superset of the tile on [start_coord]*)
+let word_start_hor t start_coord =
+  let x0, y = start_coord in
+  let x = ref x0 in
+  let b = t.tile_board in
+  let _ =
+    while b.(!x).(y) |> tile_occupied do
+      x := !x - 1
+    done
+  in
+  !x + 1
 
-(**[leftmost_connected_tile] gives the leftmost connected tile given a
-   starting tile at (x,y)*)
-let rec leftmost_connected_tile t (row, col) =
-  let tile = get_tile (row, col) t.tile_board in
-  match tile.letter with
-  | '.' -> get_tile (row, col + 1) t.tile_board
-  | _ ->
-      if col = 0 then tile else leftmost_connected_tile t (row, col - 1)
+(** [horizontal_word_of t (x,y)] gives the maximum horizontal superset
+    word that consists of the letter at [(x,y)] on [t]. Example: If
+    [(x,y)] is at 'a' for ". . . p i n e a p p l e . ." , it returns
+    "pineapple" PLACHOLDER *)
+let horizontal_word_of t start_coord =
+  let word = ref "" in
+  let _ =
+    let x = ref (word_start_hor t start_coord) in
+    let _, y = start_coord in
+    let b = t.tile_board in
+    while b.(!x).(y) |> tile_occupied do
+      word := !word ^ Char.escaped b.(!x).(y).letter;
+      x := !x + 1
+    done
+  in
+  !word
 
-(** [horizontal_word_of t (row,col)] gives the maximum horizontal
-    superset word that consists of the letter at [(row,col)] on [t].
-    Example: If [(row,col)] is at 'a' for ". . . p i n e a p p l e . ."
-    , it returns "pineapple" PLACHOLDER *)
-let rec horizontal_word_of t (row, col) = ()
+(* [word_start_ver t start_coord] is the starting y coordinate of the
+   vertical word that is a superset of the tile on [start_coord]*)
+let word_start_ver t start_coord =
+  let x, y0 = start_coord in
+  let y = ref y0 in
+  let b = t.tile_board in
+  let _ =
+    while b.(x).(!y) |> tile_occupied do
+      y := !y - 1
+    done
+  in
+  !y + 1
 
 (** [vertical_word_of t (x,y)] gives the maximum vertical superset word
     that consists of the letter at [(x,y)] on [t]. Similar to
-    [horizontal_word_of t] but for vertical words PLACEHOLDER*)
-let vertical_word_of t start_coord = "placeholder"
+    [horizontal_word_of t] but for vertical words *)
+let vertical_word_of t start_coord =
+  let word = ref "" in
+  let _ =
+    let y = ref (word_start_ver t start_coord) in
+    let x, _ = start_coord in
+    let b = t.tile_board in
+    while b.(x).(!y) |> tile_occupied do
+      word := !word ^ Char.escaped b.(x).(!y).letter;
+      y := !y + 1
+    done
+  in
+  !word
 
 (*place_tile [letter] [coord] [tile_board] places [letter] on the
   coordinate [coord] on [tile_board]. [coord] is in the order [row][col]
@@ -190,6 +226,7 @@ let place_word_no_validation t word start_coord dir =
         info_board = t.info_board;
       }
 
+(** Check if a placement is legal for a horizontally placed word. *)
 let placement_is_legal_hor t word start_coord =
   let expected_b = place_word_no_validation t word start_coord in
   let check_horizontal_is_valid_word =
@@ -205,10 +242,22 @@ let placement_is_legal_hor t word start_coord =
   in
   true
 
-let placement_is_legal_ver t word start_coord = true
+(** Check if a placement is legal for a vertically placed word. *)
+let placement_is_legal_ver t word start_coord =
+  let expected_t = place_word_no_validation t word start_coord false in
+  let check_vertical_is_valid_word =
+    vertical_word_of expected_t start_coord |> check_in_dict t.dict
+  in
+  let x0, y0 = start_coord in
+  let l = String.length word in
+  let check_horizontal_for_each_letter =
+    for y = y0 to y0 + l do
+      horizontal_word_of expected_t (x0, y) |> check_in_dict t.dict
+    done
+  in
+  true
 
-(** Use the two helper functions above to check if a placement is legal*)
-
+(** Check if a placement is legal*)
 let placement_is_legal t word start_coord direction =
   if
     off_board t word start_coord direction
