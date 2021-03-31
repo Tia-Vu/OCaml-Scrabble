@@ -315,10 +315,8 @@ let placement_is_legal t word start_coord direction =
             (String.length word - 1)
             start_coord direction)
   then false
-  else true
-
-(* else if direction then placement_is_legal_hor t word start_coord else
-   placement_is_legal_ver t word start_coord *)
+  else if direction then placement_is_legal_hor t word start_coord
+  else placement_is_legal_ver t word start_coord
 
 let place_word t word start_coord direction =
   match placement_is_legal t word start_coord direction with
