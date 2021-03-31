@@ -91,7 +91,8 @@ let word_in_dict dict word = List.mem word dict
 
 (** Helper function to raise Error if word is not in dictionary*)
 let check_in_dict dict word =
-  if word_in_dict dict word then () else raise (IllegalMove ("No word: " ^ word))
+  if word_in_dict dict word then ()
+  else raise (IllegalMove ("No word: " ^ word))
 
 (*to_letter_lst [word] returns [word] converted into a list of the
   letters in the list in the same order. Ex. to_letter_lst "hello"
@@ -188,7 +189,7 @@ let word_start_ver t start_coord =
       x := !x - 1
     done
   in
-  !x + 1
+  min x0 !x + 1
 
 (** [horizontal_word_of t (x,y)] gives the maximum horizontal superset
     word that consists of the letter at [(x,y)] on [t]. Example: If
@@ -216,7 +217,7 @@ let word_start_hor t start_coord =
   let _ =
     while is_in_bound t (x, !y) && b.(x).(!y) |> tile_occupied do
       y := !y - 1
-    done;
+    done
   in
   min y0 (!y + 1)
 
@@ -294,6 +295,7 @@ let placement_is_legal_hor t word start_coord =
     done
   in
   true
+
 (** Check if a placement is legal for a vertically placed word. *)
 let placement_is_legal_ver t word start_coord =
   let expected_t = place_word_no_validation t word start_coord false in
@@ -321,7 +323,7 @@ let placement_is_legal t word start_coord direction =
   then false
   else if direction then placement_is_legal_hor t word start_coord
   else placement_is_legal_ver t word start_coord
-  
+
 let place_word t word start_coord direction =
   match placement_is_legal t word start_coord direction with
   | true -> place_word_no_validation t word start_coord direction
