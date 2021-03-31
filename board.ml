@@ -60,10 +60,7 @@ let empty_board json_dict n =
 
 (*get_tile [coord] returns the tile at [coord] Requires: [coord] is in
   the form [row][col]*)
-let get_tile coord tile_board =
-  let row = fst coord in
-  let col = snd coord in
-  tile_board.(row).(col)
+let get_tile (row, col) tile_board = tile_board.(row).(col)
 
 (*get_adacent_tiles [tile] returns the adjacent tiles starting with the
   tile to the left and going clockwise*)
@@ -104,14 +101,12 @@ let tile_occupied tle = tle.letter = '.'
 let tiles_occupied t w (x, y) dir = true
 
 (**Helper function to check if tile placement will be on the board*)
-let off_board t word start_coord direction =
-  let row = fst start_coord in
-  let col = snd start_coord in
+let off_board t word (row, col) direction =
   match direction with
   | true -> row + String.length word > t.n || row < 0
   | false -> col + String.length word > t.n || col < 0
 
-let tiles_near_current_tiles t word start_coord direction = true
+let tiles_near_current_tiles t word (row, col) direction = true
 
 (* [word_start_hor t start_coord] is the starting x coordinate of the
    horizontal word that is a superset of the tile on [start_coord]*)
