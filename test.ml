@@ -23,6 +23,9 @@ let pp_list pp_elt lst =
   in
   "[" ^ pp_elts lst ^ "]"
 
+let pp_board board =
+  board |> Board.to_string |> fun x -> "\n-\n" ^ x ^ "\n-\n"
+
 (** [board_to_string name input expected_output] constructs an OUnit
     test named [name] that asserts the quality of [Board.to_str] with
     [index input]. *)
@@ -33,6 +36,18 @@ let board_to_string_test
   "board_to_str: " ^ name >:: fun _ ->
   assert_equal expected_output (Board.to_string input)
     ~printer:(fun x -> "\n-\n" ^ x ^ "\n-\n")
+
+let board_place_word_test
+    (name : string)
+    (board : Board.t)
+    (word : string)
+    (coord : int * int)
+    (dir : bool)
+    (expected_output : Board.t) : test =
+  name >:: fun _ ->
+  assert_equal expected_output
+    (place_word board word coord dir)
+    ~printer:pp_board
 
 (********************************************************************
   End helper functions.
