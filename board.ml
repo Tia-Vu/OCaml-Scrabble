@@ -1,6 +1,6 @@
 open Yojson.Basic.Util
 
-exception IllegalMove
+exception IllegalMove of string
 
 type tile = {
   letter : char;
@@ -90,7 +90,7 @@ let word_in_dict dict word = List.mem word dict
 
 (** Helper function to raise Error if word is not in dictionary*)
 let check_in_dict dict word =
-  if word_in_dict dict word then () else raise IllegalMove
+  if word_in_dict dict word then () else raise (IllegalMove ("No word: " ^ word))
 
 (*to_letter_lst [word] returns [word] converted into a list of the
   letters in the list in the same order. Ex. to_letter_lst "hello"
@@ -147,14 +147,19 @@ let off_board t word (row, col) direction =
 
 let tiles_near_current_tiles t word (row, col) direction = true
 
+(*[is_in_bound t coord] checks if [coord] is inbound for [t]*)
+let is_in_bound t coord =
+  let x, y = coord in
+  0 <= x && x < t.n && 0 <= y && y < t.n
+
 (* [word_start_hor t start_coord] is the starting x coordinate of the
    horizontal word that is a superset of the tile on [start_coord]*)
-let word_start_hor t start_coord =
+let word_start_ver t start_coord =
   let x0, y = start_coord in
   let x = ref x0 in
   let b = t.tile_board in
   let _ =
-    while b.(!x).(y) |> tile_occupied do
+    while is_in_bound t (!x, y) && b.(!x).(y) |> tile_occupied do
       x := !x - 1
     done
   in
@@ -163,14 +168,14 @@ let word_start_hor t start_coord =
 (** [horizontal_word_of t (x,y)] gives the maximum horizontal superset
     word that consists of the letter at [(x,y)] on [t]. Example: If
     [(x,y)] is at 'a' for ". . . p i n e a p p l e . ." , it returns
-    "pineapple" PLACHOLDER *)
-let horizontal_word_of t start_coord =
+    "pineapple" *)
+let vertical_word_of t start_coord =
   let word = ref "" in
   let _ =
-    let x = ref (word_start_hor t start_coord) in
+    let x = ref (word_start_ver t start_coord) in
     let _, y = start_coord in
     let b = t.tile_board in
-    while b.(!x).(y) |> tile_occupied do
+    while is_in_bound t (!x, y) && b.(!x).(y) |> tile_occupied do
       word := !word ^ Char.escaped b.(!x).(y).letter;
       x := !x + 1
     done
@@ -179,27 +184,27 @@ let horizontal_word_of t start_coord =
 
 (* [word_start_ver t start_coord] is the starting y coordinate of the
    vertical word that is a superset of the tile on [start_coord]*)
-let word_start_ver t start_coord =
+let word_start_hor t start_coord =
   let x, y0 = start_coord in
   let y = ref y0 in
   let b = t.tile_board in
   let _ =
-    while b.(x).(!y) |> tile_occupied do
+    while is_in_bound t (x, !y) && b.(x).(!y) |> tile_occupied do
       y := !y - 1
-    done
+    done;
   in
-  !y + 1
+  min y0 (!y + 1)
 
 (** [vertical_word_of t (x,y)] gives the maximum vertical superset word
     that consists of the letter at [(x,y)] on [t]. Similar to
     [horizontal_word_of t] but for vertical words *)
-let vertical_word_of t start_coord =
+let horizontal_word_of t start_coord =
   let word = ref "" in
   let _ =
-    let y = ref (word_start_ver t start_coord) in
+    let y = ref (word_start_hor t start_coord) in
     let x, _ = start_coord in
     let b = t.tile_board in
-    while b.(x).(!y) |> tile_occupied do
+    while is_in_bound t (x, !y) && b.(x).(!y) |> tile_occupied do
       word := !word ^ Char.escaped b.(x).(!y).letter;
       y := !y + 1
     done
@@ -253,29 +258,28 @@ let place_word_no_validation t word start_coord dir =
 (** Check if a placement is legal for a horizontally placed word. *)
 let placement_is_legal_hor t word start_coord =
   let expected_t = place_word_no_validation t word start_coord true in
-  let check_horizontal_is_valid_word =
+  let _ =
     horizontal_word_of expected_t start_coord |> check_in_dict t.dict
   in
   let x0, y0 = start_coord in
   let l = String.length word in
-  let check_vertical_for_each_letter =
-    for x = x0 to x0 + l do
-      vertical_word_of expected_t (x, y0) |> check_in_dict t.dict
+  let _ =
+    for y = y0 to y0 + l - 1 do
+      vertical_word_of expected_t (x0, y) |> check_in_dict t.dict
     done
   in
   true
-
 (** Check if a placement is legal for a vertically placed word. *)
 let placement_is_legal_ver t word start_coord =
   let expected_t = place_word_no_validation t word start_coord false in
-  let check_vertical_is_valid_word =
+  let _ =
     vertical_word_of expected_t start_coord |> check_in_dict t.dict
   in
   let x0, y0 = start_coord in
   let l = String.length word in
-  let check_horizontal_for_each_letter =
-    for y = y0 to y0 + l do
-      horizontal_word_of expected_t (x0, y) |> check_in_dict t.dict
+  let _ =
+    for x = x0 to x0 + l - 1 do
+      horizontal_word_of expected_t (x, y0) |> check_in_dict t.dict
     done
   in
   true
@@ -289,12 +293,10 @@ let placement_is_legal t word start_coord direction =
   then false
   else if direction then placement_is_legal_hor t word start_coord
   else placement_is_legal_ver t word start_coord
-
-(*still unimplemented*)
-
+(**[place_word]*)
 let place_word t word start_coord direction =
   match placement_is_legal t word start_coord direction with
   | true -> place_word_no_validation t word start_coord direction
-  | false -> raise IllegalMove
+  | false -> raise (IllegalMove "Can't place word")
 
 (* Score stuff *)
