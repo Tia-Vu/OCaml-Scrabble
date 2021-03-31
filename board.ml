@@ -61,15 +61,13 @@ let empty_board json_dict n =
 (*get_tile [coord] returns the tile at [coord] Requires: [coord] is in
   the form [row][col]*)
 let get_tile (row, col) t =
-  if row < 0 || col < 0 || row > t.n || col > t.n then init_tile ()
+  if row < 0 || col < 0 || row >= t.n || col >= t.n then init_tile ()
   else t.tile_board.(row).(col)
 
 (*get_adacent_tiles [tile] returns the adjacent tiles starting with the
   tile to the left and going clockwise Precondition: [tile] is a valid
   place on the board*)
-let get_adjacent_tiles tile t =
-  let row = fst tile.coord in
-  let col = snd tile.coord in
+let get_adjacent_tiles (row, col) t =
   {
     left = get_tile (row, col - 1) t;
     up = get_tile (row - 1, col) t;
@@ -152,7 +150,7 @@ let off_board t word (row, col) direction =
    is a valid place on the board*)
 
 let tiles_near_current_tile t (row, col) =
-  let adjacent = get_adjacent_tiles (get_tile (row, col) t) t in
+  let adjacent = get_adjacent_tiles (row, col) t in
   adjacent.left.letter <> '.'
   && adjacent.right.letter <> '.'
   && adjacent.up.letter <> '.'
@@ -313,11 +311,14 @@ let placement_is_legal t word start_coord direction =
     off_board t word start_coord direction
     || tiles_occupied t word start_coord direction
     || not
-         (tiles_near_current_tiles t (String.length word) start_coord
-            direction)
+         (tiles_near_current_tiles t
+            (String.length word - 1)
+            start_coord direction)
   then false
-  else if direction then placement_is_legal_hor t word start_coord
-  else placement_is_legal_ver t word start_coord
+  else true
+
+(* else if direction then placement_is_legal_hor t word start_coord else
+   placement_is_legal_ver t word start_coord *)
 
 let place_word t word start_coord direction =
   match placement_is_legal t word start_coord direction with
