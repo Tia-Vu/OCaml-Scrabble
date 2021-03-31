@@ -29,6 +29,7 @@ type t = {
   (*Take cares of board info n x n (double score) TODO: someday*)
   info_board : itile array array;
   dict : string list;
+  is_empty : bool;
 }
 
 (*Return a new dictionary from json*)
@@ -54,6 +55,7 @@ let empty_board json_dict n =
     tile_board = init_tile_board n;
     info_board = init_info_board n;
     dict = dict_from_json json_dict;
+    is_empty = true;
   }
 
 (*TODO: Make dictionary for board*)
@@ -271,6 +273,7 @@ let place_word_no_validation t word start_coord dir =
         tile_board =
           place_word_hor (to_letter_lst word) start_coord t.tile_board;
         info_board = t.info_board;
+        is_empty = false;
       }
   | false ->
       {
@@ -279,6 +282,7 @@ let place_word_no_validation t word start_coord dir =
         tile_board =
           place_word_ver (to_letter_lst word) start_coord t.tile_board;
         info_board = t.info_board;
+        is_empty = false;
       }
 
 (** Check if a placement is legal for a horizontally placed word. *)
@@ -316,10 +320,11 @@ let placement_is_legal t word start_coord direction =
   if
     off_board t word start_coord direction
     || tiles_occupied t word start_coord direction
-    || not
-         (tiles_near_current_tiles t
-            (String.length word - 1)
-            start_coord direction)
+    || (not t.is_empty)
+       && not
+            (tiles_near_current_tiles t
+               (String.length word - 1)
+               start_coord direction)
   then false
   else if direction then placement_is_legal_hor t word start_coord
   else placement_is_legal_ver t word start_coord
