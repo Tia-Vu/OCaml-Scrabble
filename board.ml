@@ -60,18 +60,21 @@ let empty_board json_dict n =
 
 (*get_tile [coord] returns the tile at [coord] Requires: [coord] is in
   the form [row][col]*)
-let get_tile (row, col) tile_board = tile_board.(row).(col)
+let get_tile (row, col) t =
+  if row < 0 || col < 0 || row > t.n || col > t.n then init_tile ()
+  else t.tile_board.(row).(col)
 
 (*get_adacent_tiles [tile] returns the adjacent tiles starting with the
-  tile to the left and going clockwise*)
-let get_adjacent_tiles tile tile_board =
+  tile to the left and going clockwise Precondition: [tile] is a valid
+  place on the board*)
+let get_adjacent_tiles tile t =
   let row = fst tile.coord in
   let col = snd tile.coord in
   {
-    left = get_tile (row, col - 1) tile_board;
-    up = get_tile (row - 1, col) tile_board;
-    right = get_tile (row, col + 1) tile_board;
-    down = get_tile (row + 1, col) tile_board;
+    left = get_tile (row, col - 1) t;
+    up = get_tile (row - 1, col) t;
+    right = get_tile (row, col + 1) t;
+    down = get_tile (row + 1, col) t;
   }
 
 let row_to_string row =
@@ -110,34 +113,33 @@ let to_letter_lst word =
 let tile_occupied tle = tle.letter <> '.'
 
 (**[tiles_occupied_hor t w (row,col) length idx] is a helper function
-   for tiles_occupied that checks horizontally Precondition: (row,col)
+   for tiles_occupied that checks horizontally Precondition: [(row,col)]
    must be a valid place on the board, letters is nonempty*)
-let rec tiles_occupied_hor tile_board letters (row, col) =
-  let board_letter = (get_tile (row, col) tile_board).letter in
+let rec tiles_occupied_hor t letters (row, col) =
+  let board_letter = (get_tile (row, col) t).letter in
   match letters with
   | [] -> false
-  | h :: t ->
+  | h :: tail ->
       if board_letter = '.' || h = board_letter then
-        tiles_occupied_hor tile_board t (row, col + 1)
+        tiles_occupied_hor t tail (row, col + 1)
       else true
 
 (**Same as tiles_occupied_hor but vertical*)
-let rec tiles_occupied_ver tile_board letters (row, col) =
-  let board_letter = (get_tile (row, col) tile_board).letter in
+let rec tiles_occupied_ver t letters (row, col) =
+  let board_letter = (get_tile (row, col) t).letter in
   match letters with
   | [] -> false
-  | h :: t ->
+  | h :: tail ->
       if board_letter = '.' || h = board_letter then
-        tiles_occupied_ver tile_board t (row + 1, col)
+        tiles_occupied_ver t tail (row + 1, col)
       else true
 
 (** [tiles_occupied t w start_coord dir] check if there are no tiles on
     the spots that [word] is expected to be placed on, or else they must
     be the same letter PLACEHOLDER*)
 let tiles_occupied t w start_coord dir =
-  if dir then
-    tiles_occupied_hor t.tile_board (to_letter_lst w) start_coord
-  else tiles_occupied_hor t.tile_board (to_letter_lst w) start_coord
+  if dir then tiles_occupied_hor t (to_letter_lst w) start_coord
+  else tiles_occupied_ver t (to_letter_lst w) start_coord
 
 (**Helper function to check if tile placement will be on the board*)
 let off_board t word (row, col) direction =
@@ -146,12 +148,11 @@ let off_board t word (row, col) direction =
   | false -> col + String.length word > t.n || col < 0
 
 (**[tiles_near_current_tile] gives whether the current tile at
-   [(row,col)] has any tiles adjacent to it*)
+   [(row,col)] has any tiles adjacent to it Precondition: [(row, col)]
+   is a valid place on the board*)
 
-let tiles_near_current_tile tile_board (row, col) =
-  let adjacent =
-    get_adjacent_tiles (get_tile (row, col) tile_board) tile_board
-  in
+let tiles_near_current_tile t (row, col) =
+  let adjacent = get_adjacent_tiles (get_tile (row, col) t) t in
   adjacent.left.letter <> '.'
   && adjacent.right.letter <> '.'
   && adjacent.up.letter <> '.'
@@ -168,7 +169,7 @@ let rec tiles_near_current_tiles t idx (row, col) dir =
   match idx with
   | 0 -> false
   | _ ->
-      if tiles_near_current_tile t.tile_board (row, col) then true
+      if tiles_near_current_tile t (row, col) then true
       else if dir then
         tiles_near_current_tiles t (idx - 1) (row, col + 1) dir
       else tiles_near_current_tiles t (idx - 1) (row + 1, col) dir
@@ -317,8 +318,6 @@ let placement_is_legal t word start_coord direction =
   then false
   else if direction then placement_is_legal_hor t word start_coord
   else placement_is_legal_ver t word start_coord
-
-(*still unimplemented*)
 
 let place_word t word start_coord direction =
   match placement_is_legal t word start_coord direction with
