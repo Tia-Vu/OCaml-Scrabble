@@ -92,13 +92,52 @@ let word_in_dict dict word = List.mem word dict
 let check_in_dict dict word =
   if word_in_dict dict word then () else raise IllegalMove
 
-(** [tile_occupied tle] checks is [tle] has a letter. *)
-let tile_occupied tle = tle.letter = '.'
+(*to_letter_lst [word] returns [word] converted into a list of the
+  letters in the list in the same order. Ex. to_letter_lst "hello"
+  returns ['h';'e';'l';'l';'o']*)
+let to_letter_lst word =
+  let rec to_letter_lst_h word letter_lst =
+    match word with
+    | "" -> List.rev letter_lst
+    | _ ->
+        to_letter_lst_h
+          (String.sub word 1 (String.length word - 1))
+          (word.[0] :: letter_lst)
+  in
+  to_letter_lst_h word []
 
-(** [tiles_occupied t w (x,y) dir] check if there are no tiles on the
-    spots that [word] is expected to be placed on, or else they must be
-    the same letter PLACEHOLDER*)
-let tiles_occupied t w (x, y) dir = true
+(** [tile_occupied tle] checks is [tle] has a letter. *)
+let tile_occupied tle = tle.letter <> '.'
+
+(**[tiles_occupied_hor t w (row,col) length idx] is a helper function
+   for tiles_occupied that checks horizontally Precondition: (row,col)
+   must be a valid place on the board, letters is nonempty*)
+let rec tiles_occupied_hor tile_board letters (row, col) =
+  let board_letter = (get_tile (row, col) tile_board).letter in
+  match letters with
+  | [] -> false
+  | h :: t ->
+      if board_letter = '.' || h = board_letter then
+        tiles_occupied_hor tile_board t (row, col + 1)
+      else true
+
+(**Same as tiles_occupied_hor but vertical*)
+let rec tiles_occupied_ver tile_board letters (row, col) =
+  let board_letter = (get_tile (row, col) tile_board).letter in
+  match letters with
+  | [] -> false
+  | h :: t ->
+      if board_letter = '.' || h = board_letter then
+        tiles_occupied_ver tile_board t (row + 1, col)
+      else true
+
+(** [tiles_occupied t w start_coord dir] check if there are no tiles on
+    the spots that [word] is expected to be placed on, or else they must
+    be the same letter PLACEHOLDER*)
+let tiles_occupied t w start_coord dir =
+  if dir then
+    tiles_occupied_hor t.tile_board (to_letter_lst w) start_coord
+  else tiles_occupied_hor t.tile_board (to_letter_lst w) start_coord
 
 (**Helper function to check if tile placement will be on the board*)
 let off_board t word (row, col) direction =
@@ -173,20 +212,6 @@ let vertical_word_of t start_coord =
   Requires: is a valid placement*)
 let place_tile letter coord tile_board =
   tile_board.(fst coord).(snd coord) <- { letter; coord }
-
-(*to_letter_lst [word] returns [word] converted into a list of the
-  letters in the list in the same order. Ex. to_letter_lst "hello"
-  returns ['h';'e';'l';'l';'o']*)
-let to_letter_lst word =
-  let rec to_letter_lst_h word letter_lst =
-    match word with
-    | "" -> List.rev letter_lst
-    | _ ->
-        to_letter_lst_h
-          (String.sub word 1 (String.length word - 1))
-          (word.[0] :: letter_lst)
-  in
-  to_letter_lst_h word []
 
 let rec place_word_hor letter_lst curr_coord tile_board =
   let next_coord = (fst curr_coord, snd curr_coord + 1) in
