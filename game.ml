@@ -19,7 +19,7 @@ type place_word_command = {
 
 (** Checks if there are any possible moves. [continue_game] is true if
     there are still possible moves to be made, and false if not.*)
-let continue_game game_state = false
+let continue_game game_state = true
 
 (**[read_input_move] prompts the player for a move and returns it.*)
 let read_input_move () =
@@ -35,9 +35,10 @@ let parse_place_word (s : string) : place_word_command =
         word = w;
         start_coord = (int_of_string x, int_of_string y);
         direction =
-          (if dir = "hor" then true
+          ( if dir = "hor" then true
           else false
-            (*TODO if dir is anything else than "hor" then its false*));
+            (*TODO if dir is anything else than "hor" then its false*)
+          );
       }
   | _ -> failwith "Wrong"
 
@@ -58,7 +59,6 @@ let update_game_state s input =
   (*OLD: Later when we have scores { board = fst placed; scores =
     update_score s.scores (snd placed) }*)
   { board = placed }
-
 
 (** [play_game] runs each turn, updating the game state, printing the
     new board (and score, when implemented), and checks if the game

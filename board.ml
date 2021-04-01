@@ -317,16 +317,21 @@ let placement_is_legal_ver t word start_coord =
 
 (** Check if a placement is legal*)
 let placement_is_legal t word start_coord direction =
+  if off_board t word start_coord direction then
+    raise (IllegalMove "Word goes off board")
+  else ();
+  if tiles_occupied t word start_coord direction then
+    raise (IllegalMove "Tile tries to place on existing tiles")
+  else ();
   if
-    off_board t word start_coord direction
-    || tiles_occupied t word start_coord direction
-    || (not t.is_empty)
-       && not
-            (tiles_near_current_tiles t
-               (String.length word - 1)
-               start_coord direction)
-  then false
-  else if direction then placement_is_legal_hor t word start_coord
+    (not t.is_empty)
+    && not
+         (tiles_near_current_tiles t
+            (String.length word - 1)
+            start_coord direction)
+  then raise (IllegalMove "Not near any existing tiles")
+  else ();
+  if direction then placement_is_legal_hor t word start_coord
   else placement_is_legal_ver t word start_coord
 
 let place_word t word start_coord direction =
