@@ -91,7 +91,7 @@ let rec dict_prompt () =
    terminating the game when the turns are done.*)
 let run () =
   print_intro ();
-  let new_board = empty_board (dict_prompt ()) 6 in
+  let new_board = empty_board (dict_prompt ()) 25 in
   (*TODO: Replace 6 with user input*)
   play_game { board = new_board };
 
