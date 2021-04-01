@@ -191,7 +191,7 @@ let word_start_ver t start_coord =
       x := !x - 1
     done
   in
-  min x0 !x + 1
+  min x0 (!x + 1)
 
 (** [horizontal_word_of t (x,y)] gives the maximum horizontal superset
     word that consists of the letter at [(x,y)] on [t]. Example: If
