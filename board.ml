@@ -155,9 +155,9 @@ let off_board t word (row, col) direction =
 let tiles_near_current_tile t (row, col) =
   let adjacent = get_adjacent_tiles (row, col) t in
   adjacent.left.letter <> '.'
-  && adjacent.right.letter <> '.'
-  && adjacent.up.letter <> '.'
-  && adjacent.down.letter <> '.'
+  || adjacent.right.letter <> '.'
+  || adjacent.up.letter <> '.'
+  || adjacent.down.letter <> '.'
 
 (**[tiles_near_current_tiles] t idx (row,col) dir] gives whether there
    are tiles adjacent to the tiles starting at the tile at [(row,col)]
