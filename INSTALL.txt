@@ -1,0 +1,9 @@
+1) To run the game type:
+make play
+2) Then the game will prompt you to input the file name of the dictionary to use. We recommend our own dictionary, named "dictionary.json". So, type:
+dictionary.json
+3) Then it will prompt you to place a word. The format is {word} {row} {column} {"hor"/"ver"}. (row column starts from 0, top left) We recommend you to type:
+apple 0 0 hor
+4) Now try placing more words! They have to be connected to the existing tiles (as scrabble does!). We recommend you to type:
+pineapple 0 1 ver
+5) For now the game runs forever. Press 'ctrl-d' to quit. 
