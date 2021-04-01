@@ -7,7 +7,7 @@
 type t
 
 (** Raised when an illegal move is attempted *)
-exception IllegalMove
+exception IllegalMove of string
 
 (** Initializes an empty board with a dictionary stored with a certain
     json file.*)
