@@ -36,7 +36,8 @@ let parse_place_word (s : string) : place_word_command =
         start_coord = (int_of_string x, int_of_string y);
         direction =
           ( if dir = "hor" then true
-          else false
+          else if dir = "ver" then false
+          else failwith "Wrong"
             (*TODO if dir is anything else than "hor" then its false*)
           );
       }
@@ -69,9 +70,8 @@ let play_game s =
     | true -> (
         match update_game_state state (read_input_move ()) with
         | exception Board.IllegalMove s ->
-            print_endline ("This is an illegal move. " ^ s);
-            print_string "Please try again.";
-            print_board state.board;
+            print_endline ("\nThis is an illegal move. " ^ s);
+            print_string "\nPlease try again.\n";
             pass_turns state (continue_game state)
         | new_state ->
             print_board new_state.board;
@@ -97,7 +97,7 @@ let rec dict_prompt () =
    terminating the game when the turns are done.*)
 let run () =
   print_intro ();
-  let new_board = empty_board (dict_prompt ()) 6 in
+  let new_board = empty_board (dict_prompt ()) 25 in
   (*TODO: Replace 6 with user input*)
   play_game { board = new_board };
 

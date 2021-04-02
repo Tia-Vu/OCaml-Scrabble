@@ -94,7 +94,7 @@ let word_in_dict dict word = List.mem word dict
 (** Helper function to raise Error if word is not in dictionary*)
 let check_in_dict dict word =
   if String.length word = 1 || word_in_dict dict word then ()
-  else raise (IllegalMove ("No word: " ^ word))
+  else raise (IllegalMove ("No word: " ^ word ^ "in dictionary."))
 
 (*to_letter_lst [word] returns [word] converted into a list of the
   letters in the list in the same order. Ex. to_letter_lst "hello"
@@ -318,10 +318,10 @@ let placement_is_legal_ver t word start_coord =
 (** Check if a placement is legal*)
 let placement_is_legal t word start_coord direction =
   if off_board t word start_coord direction then
-    raise (IllegalMove "Word goes off board")
+    raise (IllegalMove "Word goes off board.")
   else ();
   if tiles_occupied t word start_coord direction then
-    raise (IllegalMove "Tile tries to place on existing tiles")
+    raise (IllegalMove "Tile tries to place on existing tiles.")
   else ();
   if
     (not t.is_empty)
@@ -329,7 +329,7 @@ let placement_is_legal t word start_coord direction =
          (tiles_near_current_tiles t
             (String.length word - 1)
             start_coord direction)
-  then raise (IllegalMove "Not near any existing tiles")
+  then raise (IllegalMove "Not near any existing tiles.")
   else ();
   if direction then placement_is_legal_hor t word start_coord
   else placement_is_legal_ver t word start_coord
@@ -337,6 +337,6 @@ let placement_is_legal t word start_coord direction =
 let place_word t word start_coord direction =
   match placement_is_legal t word start_coord direction with
   | true -> place_word_no_validation t word start_coord direction
-  | false -> raise (IllegalMove "Can't place word")
+  | false -> raise (IllegalMove "Can't place word.")
 
 (* Score stuff *)
