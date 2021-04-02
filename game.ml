@@ -69,6 +69,8 @@ let play_game s =
     | true -> (
         match update_game_state state (read_input_move ()) with
         | exception Board.IllegalMove s ->
+            print_endline ("This is an illegal move. " ^ s);
+            print_string "Please try again.";
             print_board state.board;
             pass_turns state (continue_game state)
         | new_state ->
