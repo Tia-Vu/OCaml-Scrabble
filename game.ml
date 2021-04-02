@@ -66,10 +66,14 @@ let update_game_state s input =
 let play_game s =
   let rec pass_turns state continue =
     match continue with
-    | true ->
-        let new_state = update_game_state state (read_input_move ()) in
-        print_board new_state.board;
-        pass_turns new_state (continue_game new_state)
+    | true -> (
+        match update_game_state state (read_input_move ()) with
+        | exception Board.IllegalMove s ->
+            print_board state.board;
+            pass_turns state (continue_game state)
+        | new_state ->
+            print_board new_state.board;
+            pass_turns new_state (continue_game new_state) )
     | false -> print_endline "No more moves can be made."
   in
   pass_turns s true
@@ -91,7 +95,7 @@ let rec dict_prompt () =
    terminating the game when the turns are done.*)
 let run () =
   print_intro ();
-  let new_board = empty_board (dict_prompt ()) 25 in
+  let new_board = empty_board (dict_prompt ()) 6 in
   (*TODO: Replace 6 with user input*)
   play_game { board = new_board };
 
