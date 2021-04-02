@@ -27,6 +27,8 @@ let read_input_move () =
   print_string "> ";
   read_line ()
 
+exception Malformed
+
 let parse_place_word (s : string) : place_word_command =
   let parsed = String.split_on_char ' ' s in
   match parsed with
@@ -37,11 +39,11 @@ let parse_place_word (s : string) : place_word_command =
         direction =
           ( if dir = "hor" then true
           else if dir = "ver" then false
-          else failwith "Wrong"
-            (*TODO if dir is anything else than "hor" then its false*)
-          );
+          else raise Malformed
+            (*TODO if dir is anything else than "hor" or "ver" then it
+              fails*) );
       }
-  | _ -> failwith "Wrong"
+  | _ -> raise Malformed
 
 (**[input_move] prompts the player for a move in the form of "word x y
    direction" and returns it.*)
@@ -53,13 +55,15 @@ let input_move () =
 (**[update_game_state] is the new game state after the board and score
    in old state [s] is updated using the passed in [move].*)
 let update_game_state s input =
-  let cmd = parse_place_word input in
-  let placed =
-    place_word s.board cmd.word cmd.start_coord cmd.direction
-  in
-  (*OLD: Later when we have scores { board = fst placed; scores =
-    update_score s.scores (snd placed) }*)
-  { board = placed }
+  match parse_place_word input with
+  | exception Malformed -> raise Malformed
+  | cmd ->
+      let placed =
+        place_word s.board cmd.word cmd.start_coord cmd.direction
+      in
+      (*OLD: Later when we have scores { board = fst placed; scores =
+        update_score s.scores (snd placed) }*)
+      { board = placed }
 
 (** [play_game] runs each turn, updating the game state, printing the
     new board (and score, when implemented), and checks if the game
@@ -71,6 +75,10 @@ let play_game s =
         match update_game_state state (read_input_move ()) with
         | exception Board.IllegalMove s ->
             print_endline ("\nThis is an illegal move. " ^ s);
+            print_string "\nPlease try again.\n";
+            pass_turns state (continue_game state)
+        | exception Malformed ->
+            print_endline "\nThis is not a valid command";
             print_string "\nPlease try again.\n";
             pass_turns state (continue_game state)
         | new_state ->
