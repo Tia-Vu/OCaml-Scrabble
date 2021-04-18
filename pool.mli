@@ -10,3 +10,6 @@ val init_pool : unit -> t
 
 (**[draw_letter p] draws a random letter from [p]*)
 val draw_letter : t -> char
+
+(**[size p] is the size of the current tile_pool*)
+val size : t -> int
