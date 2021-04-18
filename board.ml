@@ -262,9 +262,24 @@ let rec place_word_ver letter_lst curr_coord tile_board =
       place_tile h curr_coord tile_board;
       place_word_ver t next_coord tile_board
 
-(** [place_word_no_validation t w (x,y) dir] places word without
-    validation check*)
+(** [copy_mat mat] gives a new copy of [mat], a 2d array. *)
+let copy_mat mat =
+  let n = Array.length mat in
+  let copy_ith i = Array.copy mat.(i) in
+  Array.init n copy_ith
+
+(** [copy_board t] gives a new copy of [t]*)
+let copy_board t =
+  {
+    t with
+    tile_board = copy_mat t.tile_board;
+    info_board = copy_mat t.info_board;
+  }
+
+(** [place_word_no_validation t w (x,y) dir] gives a new board with the
+    word placed on it. No validation check is done.*)
 let place_word_no_validation t word start_coord dir =
+  let t = copy_board t in
   match dir with
   | true ->
       {
