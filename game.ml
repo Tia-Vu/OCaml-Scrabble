@@ -1,6 +1,7 @@
 open Board
 open Display
 open Score
+open Pool
 open Yojson.Basic.Util
 
 (** TODO: This is an incomplete implementation. Will contain more fiels
@@ -11,6 +12,8 @@ type game_state = {
      shuffle (private), draw x tiles (public), is_emtpy, initialization *)
   (* Associated list to lookup point for letter*)
   letter_points : (char * int) list;
+  (* Letter pool of the game*)
+  pool : Pool.t;
 }
 
 type place_word_command = {
@@ -120,6 +123,7 @@ let run () =
     {
       board = new_board;
       letter_points = read_lpts "letter_points.json";
+      pool = Pool.init_pool ();
     };
 
   print_end ();
