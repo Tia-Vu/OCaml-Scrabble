@@ -27,6 +27,8 @@ let read_input_move () =
   print_string "> ";
   read_line ()
 
+exception Malformed
+
 let parse_place_word (s : string) : place_word_command =
   let parsed = String.split_on_char ' ' s in
   match parsed with
@@ -36,11 +38,12 @@ let parse_place_word (s : string) : place_word_command =
         start_coord = (int_of_string x, int_of_string y);
         direction =
           ( if dir = "hor" then true
-          else false
-            (*TODO if dir is anything else than "hor" then its false*)
-          );
+          else if dir = "ver" then false
+          else raise Malformed
+            (*TODO if dir is anything else than "hor" or "ver" then it
+              fails*) );
       }
-  | _ -> failwith "Wrong"
+  | _ -> raise Malformed
 
 (**[input_move] prompts the player for a move in the form of "word x y
    direction" and returns it.*)
@@ -52,13 +55,15 @@ let input_move () =
 (**[update_game_state] is the new game state after the board and score
    in old state [s] is updated using the passed in [move].*)
 let update_game_state s input =
-  let cmd = parse_place_word input in
-  let placed =
-    place_word s.board cmd.word cmd.start_coord cmd.direction
-  in
-  (*OLD: Later when we have scores { board = fst placed; scores =
-    update_score s.scores (snd placed) }*)
-  { board = placed }
+  match parse_place_word input with
+  | exception Malformed -> raise Malformed
+  | cmd ->
+      let placed =
+        place_word s.board cmd.word cmd.start_coord cmd.direction
+      in
+      (*OLD: Later when we have scores { board = fst placed; scores =
+        update_score s.scores (snd placed) }*)
+      { board = placed }
 
 (** [play_game] runs each turn, updating the game state, printing the
     new board (and score, when implemented), and checks if the game
@@ -66,10 +71,19 @@ let update_game_state s input =
 let play_game s =
   let rec pass_turns state continue =
     match continue with
-    | true ->
-        let new_state = update_game_state state (read_input_move ()) in
-        print_board new_state.board;
-        pass_turns new_state (continue_game new_state)
+    | true -> (
+        match update_game_state state (read_input_move ()) with
+        | exception Board.IllegalMove s ->
+            print_endline ("\nThis is an illegal move. " ^ s);
+            print_string "\nPlease try again.\n";
+            pass_turns state (continue_game state)
+        | exception Malformed ->
+            print_endline "\nThis is not a valid command";
+            print_string "\nPlease try again.\n";
+            pass_turns state (continue_game state)
+        | new_state ->
+            print_board new_state.board;
+            pass_turns new_state (continue_game new_state) )
     | false -> print_endline "No more moves can be made."
   in
   pass_turns s true
