@@ -77,16 +77,52 @@ let get_adjacent_tiles (row, col) t =
     down = get_tile (row + 1, col) t;
   }
 
-let row_to_string row =
-  let add_letter str t = str ^ " " ^ Char.escaped t.letter in
+(** [space_tr len acc] is tail recursive version of [space]*)
+let rec space_tr acc = function
+  | 0 -> acc
+  | len -> space_tr (acc ^ " ") (len - 1)
+
+(** [space len] is a space with length of [len].*)
+let space len = space_tr "" len
+
+(** [row_to_string s row] converts array [row] into a string of its
+    letters, with [s] spaces in between each letter. *)
+let row_to_string spacing row =
+  let space = space spacing in
+  let add_letter str t = str ^ space ^ Char.escaped t.letter in
   let spaced_str = Array.fold_left add_letter "" row in
-  String.sub spaced_str 1 (String.length spaced_str - 1)
+  String.sub spaced_str spacing (String.length spaced_str - spacing)
+
+(** [formatted_int i] is string representation of [i] with two digits.
+    Example: 1 becomes "01", 12 becomes "12" Remark: The length of
+    [formatted_int] should equal the [spacing] variables used in other
+    functions*)
+let formatted_int i =
+  string_of_int i |> fun s -> if String.length s = 1 then "0" ^ s else s
+
+(**[col_indices_row_string n] is the first row in [to_string] which
+   marks the indices of the 0th to the ([n]-1)th column. *)
+let col_indices_row_string n =
+  let rec rec_tr i acc = function
+    | 0 -> acc
+    | n -> rec_tr (i + 1) (acc ^ formatted_int i ^ " ") (n - 1)
+  in
+  rec_tr 0 "" n
 
 let to_string b =
-  let rows = Array.map row_to_string b.tile_board in
+  let spacing = 2 in
+  let rows = Array.map (row_to_string spacing) b.tile_board in
+  let _ =
+    for i = 0 to Array.length rows - 1 do
+      rows.(i) <- formatted_int i ^ space spacing ^ rows.(i)
+    done
+  in
   let add_row str row = str ^ "\n" ^ row in
-  let entered_str = Array.fold_left add_row "" rows in
-  String.sub entered_str 1 (String.length entered_str - 1)
+  let string_of_rows = Array.fold_left add_row "" rows in
+  space (spacing * 2)
+  ^ col_indices_row_string (Array.length rows)
+  ^ "\n"
+  ^ String.sub string_of_rows 1 (String.length string_of_rows - 1)
 
 (** Helper function to check if word is in dictionary*)
 let word_in_dict dict word = List.mem word dict
