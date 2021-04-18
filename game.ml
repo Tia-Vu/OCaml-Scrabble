@@ -1,14 +1,16 @@
 open Board
 open Display
 open Score
+open Yojson.Basic.Util
 
 (** TODO: This is an incomplete implementation. Will contain more fiels
     like scores = Score.t once Score is implemented.*)
 type game_state = {
   board : Board.t;
-      (* Things to potentially add: hand: ; scores:[0,1,2,] tilepool:
-         shuffle (private), draw x tiles (public), is_emtpy,
-         initialization *)
+  (* Things to potentially add: hand: ; scores:[0,1,2,] tilepool:
+     shuffle (private), draw x tiles (public), is_emtpy, initialization *)
+  (* Associated list to lookup point for letter*)
+  letter_points : (char * int) list;
 }
 
 type place_word_command = {
@@ -63,7 +65,7 @@ let update_game_state s input =
       in
       (*OLD: Later when we have scores { board = fst placed; scores =
         update_score s.scores (snd placed) }*)
-      { board = placed }
+      { s with board = placed }
 
 (** [play_game] runs each turn, updating the game state, printing the
     new board (and score, when implemented), and checks if the game
@@ -100,6 +102,13 @@ let rec dict_prompt () =
   if Sys.file_exists file_name then Yojson.Basic.from_file file_name
   else dict_prompt ()
 
+(** [read_lpts fname] gives [letter_points] compatible data from json
+    file with name [fname]*)
+let read_lpts file_name =
+  Yojson.Basic.from_file file_name
+  |> to_assoc
+  |> List.map (fun (x, y) -> (x.[0], to_int y))
+
 (**[run] is the main method of the Scrabble game. It initializes an
    empty board and score and starts the passing of turns, eventually
    terminating the game when the turns are done.*)
@@ -107,7 +116,11 @@ let run () =
   print_intro ();
   let new_board = empty_board (dict_prompt ()) 25 in
   (*TODO: Replace 6 with user input*)
-  play_game { board = new_board };
+  play_game
+    {
+      board = new_board;
+      letter_points = read_lpts "letter_points.json";
+    };
 
   print_end ();
   exit 0
