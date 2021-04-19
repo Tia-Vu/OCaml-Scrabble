@@ -77,16 +77,52 @@ let get_adjacent_tiles (row, col) t =
     down = get_tile (row + 1, col) t;
   }
 
-let row_to_string row =
-  let add_letter str t = str ^ " " ^ Char.escaped t.letter in
+(** [space_tr len acc] is tail recursive version of [space]*)
+let rec space_tr acc = function
+  | 0 -> acc
+  | len -> space_tr (acc ^ " ") (len - 1)
+
+(** [space len] is a space with length of [len].*)
+let space len = space_tr "" len
+
+(** [row_to_string s row] converts array [row] into a string of its
+    letters, with [s] spaces in between each letter. *)
+let row_to_string spacing row =
+  let space = space spacing in
+  let add_letter str t = str ^ space ^ Char.escaped t.letter in
   let spaced_str = Array.fold_left add_letter "" row in
-  String.sub spaced_str 1 (String.length spaced_str - 1)
+  String.sub spaced_str spacing (String.length spaced_str - spacing)
+
+(** [formatted_int i] is string representation of [i] with two digits.
+    Example: 1 becomes "01", 12 becomes "12" Remark: The length of
+    [formatted_int] should equal the [spacing] variables used in other
+    functions*)
+let formatted_int i =
+  string_of_int i |> fun s -> if String.length s = 1 then "0" ^ s else s
+
+(**[col_indices_row_string n] is the first row in [to_string] which
+   marks the indices of the 0th to the ([n]-1)th column. *)
+let col_indices_row_string n =
+  let rec rec_tr i acc = function
+    | 0 -> acc
+    | n -> rec_tr (i + 1) (acc ^ formatted_int i ^ " ") (n - 1)
+  in
+  rec_tr 0 "" n
 
 let to_string b =
-  let rows = Array.map row_to_string b.tile_board in
+  let spacing = 2 in
+  let rows = Array.map (row_to_string spacing) b.tile_board in
+  let _ =
+    for i = 0 to Array.length rows - 1 do
+      rows.(i) <- formatted_int i ^ space spacing ^ rows.(i)
+    done
+  in
   let add_row str row = str ^ "\n" ^ row in
-  let entered_str = Array.fold_left add_row "" rows in
-  String.sub entered_str 1 (String.length entered_str - 1)
+  let string_of_rows = Array.fold_left add_row "" rows in
+  space (spacing * 2)
+  ^ col_indices_row_string (Array.length rows)
+  ^ "\n"
+  ^ String.sub string_of_rows 1 (String.length string_of_rows - 1)
 
 (** Helper function to check if word is in dictionary*)
 let word_in_dict dict word = List.mem word dict
@@ -94,7 +130,7 @@ let word_in_dict dict word = List.mem word dict
 (** Helper function to raise Error if word is not in dictionary*)
 let check_in_dict dict word =
   if String.length word = 1 || word_in_dict dict word then ()
-  else raise (IllegalMove ("No word: " ^ word))
+  else raise (IllegalMove ("No word: " ^ word ^ " in dictionary."))
 
 (*to_letter_lst [word] returns [word] converted into a list of the
   letters in the list in the same order. Ex. to_letter_lst "hello"
@@ -262,9 +298,24 @@ let rec place_word_ver letter_lst curr_coord tile_board =
       place_tile h curr_coord tile_board;
       place_word_ver t next_coord tile_board
 
-(** [place_word_no_validation t w (x,y) dir] places word without
-    validation check*)
+(** [copy_mat mat] gives a new copy of [mat], a 2d array. *)
+let copy_mat mat =
+  let n = Array.length mat in
+  let copy_ith i = Array.copy mat.(i) in
+  Array.init n copy_ith
+
+(** [copy_board t] gives a new copy of [t]*)
+let copy_board t =
+  {
+    t with
+    tile_board = copy_mat t.tile_board;
+    info_board = copy_mat t.info_board;
+  }
+
+(** [place_word_no_validation t w (x,y) dir] gives a new board with the
+    word placed on it. No validation check is done.*)
 let place_word_no_validation t word start_coord dir =
+  let t = copy_board t in
   match dir with
   | true ->
       {
@@ -318,10 +369,10 @@ let placement_is_legal_ver t word start_coord =
 (** Check if a placement is legal*)
 let placement_is_legal t word start_coord direction =
   if off_board t word start_coord direction then
-    raise (IllegalMove "Word goes off board")
+    raise (IllegalMove "Word goes off board.")
   else ();
   if tiles_occupied t word start_coord direction then
-    raise (IllegalMove "Tile tries to place on existing tiles")
+    raise (IllegalMove "Tile tries to place on existing tiles.")
   else ();
   if
     (not t.is_empty)
@@ -329,7 +380,7 @@ let placement_is_legal t word start_coord direction =
          (tiles_near_current_tiles t
             (String.length word - 1)
             start_coord direction)
-  then raise (IllegalMove "Not near any existing tiles")
+  then raise (IllegalMove "Not near any existing tiles.")
   else ();
   if direction then placement_is_legal_hor t word start_coord
   else placement_is_legal_ver t word start_coord
@@ -337,6 +388,6 @@ let placement_is_legal t word start_coord direction =
 let place_word t word start_coord direction =
   match placement_is_legal t word start_coord direction with
   | true -> place_word_no_validation t word start_coord direction
-  | false -> raise (IllegalMove "Can't place word")
+  | false -> raise (IllegalMove "Can't place word.")
 
 (* Score stuff *)
