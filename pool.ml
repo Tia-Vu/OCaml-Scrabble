@@ -1,5 +1,7 @@
 type t = { mutable letters : char list }
 
+exception DrawFromEmpty
+
 (*TODO: should we get rid of formatting...?*)
 let init_pool () =
   {
@@ -114,10 +116,13 @@ let rec remove_nth_tr front (h :: back) = function
 (** [remove_nth n lst] gives a list with the [n]th element removed.*)
 let remove_nth n lst = remove_nth_tr [] lst n
 
+let size pool = List.length pool.letters
+
+let is_empty pool = size pool = 0
+
 let draw_letter pool =
+  if is_empty pool then raise DrawFromEmpty else ();
   let i = Random.int (List.length pool.letters) in
   let drawn_letter = List.nth pool.letters i in
   pool.letters <- remove_nth i pool.letters;
   drawn_letter
-
-let size pool = List.length pool.letters
