@@ -1,4 +1,6 @@
 open Board
+open Hand
+open Tilepool
 open Display
 open Score
 
@@ -6,6 +8,8 @@ open Score
     like scores = Score.t once Score is implemented.*)
 type game_state = {
   board : Board.t;
+  hand : Hand.t;
+  tile_pool : Tilepool.t;
       (* Things to potentially add: hand: ; scores:[0,1,2,] tilepool:
          shuffle (private), draw x tiles (public), is_emtpy,
          initialization *)
@@ -27,7 +31,7 @@ let read_input_move () =
   print_string "> ";
   read_line ()
 
-let parse_place_word (s : string) : place_word_command =
+let rec parse_place_word (s : string) : place_word_command =
   let parsed = String.split_on_char ' ' s in
   match parsed with
   | [ w; x; y; dir ] ->
@@ -35,30 +39,31 @@ let parse_place_word (s : string) : place_word_command =
         word = w;
         start_coord = (int_of_string x, int_of_string y);
         direction =
-          ( if dir = "hor" then true
+          (if dir = "hor" then true
           else false
-            (*TODO if dir is anything else than "hor" then its false*)
-          );
+            (*TODO if dir is anything else than "hor" then its false*));
       }
-  | _ -> failwith "Wrong"
-
-(**[input_move] prompts the player for a move in the form of "word x y
-   direction" and returns it.*)
-let input_move () =
-  print_endline "Make your move:";
-  print_string "> ";
-  parse_place_word (read_line ())
+  | _ ->
+      print_endline "Please enter a valid move";
+      print_string "> ";
+      parse_place_word (read_line ())
 
 (**[update_game_state] is the new game state after the board and score
-   in old state [s] is updated using the passed in [move].*)
+   in old state [s] is updated using the passed in move[input].*)
 let update_game_state s input =
-  let cmd = parse_place_word input in
-  let placed =
-    place_word s.board cmd.word cmd.start_coord cmd.direction
-  in
-  (*OLD: Later when we have scores { board = fst placed; scores =
-    update_score s.scores (snd placed) }*)
-  { board = placed }
+  match input with
+  | "Draw" ->
+      let redrawn_hand = new_hand s.tile_pool in
+      let updated_pool = subtract_hand s.tile_pool redrawn_hand in
+      { board = s.board; hand = redrawn_hand; tile_pool = updated_pool }
+  | _ ->
+      let cmd = parse_place_word input in
+      let placed_board =
+        place_word s.board cmd.word cmd.start_coord cmd.direction
+      in
+      (*OLD: Later when we have scores { board = fst placed; scores =
+        update_score s.scores (snd placed) }*)
+      { board = placed_board }
 
 (** [play_game] runs each turn, updating the game state, printing the
     new board (and score, when implemented), and checks if the game
@@ -93,7 +98,13 @@ let run () =
   print_intro ();
   let new_board = empty_board (dict_prompt ()) 25 in
   (*TODO: Replace 6 with user input*)
-  play_game { board = new_board };
+  let init_pool = new_pool () in
+  play_game
+    {
+      board = new_board;
+      hand = new_hand init_pool;
+      tile_pool = init_pool;
+    };
 
   print_end ();
   exit 0
