@@ -2,7 +2,15 @@
 open Pool
 
 (** The abstract type of values represnting hand*)
-type t
+type t = char list
+
+(** [empty_hand ()] creates an empty hand.*)
+
+val empty_hand : unit -> t
+
+(** [size hand] is the size of the hand.*)
+
+val size : t -> int
 
 (** [draw_nletters pool n hand] draws [n] letters from [pool] to hand.
     If there are less than [n] letters in [pool], draw as much as
