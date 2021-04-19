@@ -3,6 +3,8 @@ type t = { mutable letters : char list }
 exception DrawFromEmpty
 
 (*TODO: should we get rid of formatting...?*)
+
+(** Reference from https://scrabble.hasbro.com/en-us/faq*)
 let init_pool () =
   {
     letters =
