@@ -1,5 +1,7 @@
 open OUnit2
 open Board
+open Hand
+open Pool
 
 (********************************************************************
    Here are some helper functions for your testing of set-like lists. 
@@ -49,6 +51,55 @@ let board_place_word_test
     (place_word board word coord dir)
     ~printer:pp_board
 
+(** [draw_nletters_pool_size_test name n] constructs an OUnit test named
+    [name] that asserts the quality of [Pool.draw_nletters] with the
+    size of a new tile pool after drawing [n] letters.
+
+    Requires: [init_pool] starts with 98 letters*)
+let draw_nletters_pool_size_test (name : string) (n : int) : test =
+  let pool = Pool.init_pool () in
+  let _ = Hand.draw_nletters pool n (Hand.empty_hand ()) in
+  "draw_nletters_pool_size_test: " ^ name >:: fun _ ->
+  assert_equal (max 0 (98 - n)) (Pool.size pool) ~printer:string_of_int
+
+let rec create_many_draw_nletters_psize_test test_list = function
+  | -1 -> test_list
+  | m ->
+      create_many_draw_nletters_psize_test
+        ( draw_nletters_pool_size_test ("n = " ^ string_of_int m) m
+        :: test_list )
+        (m - 1)
+
+(** [draw_nletters_hand_size_test name n] constructs an OUnit test named
+    [name] that asserts the quality of [Pool.draw_nletters] with the
+    size of a new hand after drawing [n] letters.
+
+    Requires: [init_pool] starts with 98 letters. *)
+let draw_nletters_hand_size_test (name : string) (n : int) : test =
+  let pool = Pool.init_pool () in
+  let hand = Hand.draw_nletters pool n (Hand.empty_hand ()) in
+  "draw_nletters_hand_size_test: " ^ name >:: fun _ ->
+  assert_equal (min 98 n) (Hand.size hand) ~printer:string_of_int
+
+let rec create_many_draw_nletters_hsize_test test_list = function
+  | -1 -> test_list
+  | m ->
+      create_many_draw_nletters_psize_test
+        ( draw_nletters_hand_size_test ("n = " ^ string_of_int m) m
+        :: test_list )
+        (m - 1)
+
+(** [has_word_test name word hand expected] constructs an OUnit test
+    named [name] that asserts the quality of [Hand.has_word] with
+    [expected]. *)
+let has_word_test
+    (name : string)
+    (word : string)
+    (hand : Hand.t)
+    (expected : bool) : test =
+  "has_word: " ^ name >:: fun _ ->
+  assert_equal expected (has_word word hand) ~printer:string_of_bool
+
 (********************************************************************
   End helper functions.
   ********************************************************************)
@@ -56,6 +107,7 @@ let board_place_word_test
 let dict = Yojson.Basic.from_file "dictionary.json"
 
 let board_tests =
+  (*Turned off - mostly replaced by playtest*)
   [
     board_to_string_test "Empty 1 x 1 board"
       (Board.empty_board dict 1)
@@ -74,9 +126,28 @@ let board_tests =
       "c . . .\na . . .\nr . . .\n. . . .";
   ]
 
+let hand_tests =
+  [
+    has_word_test "apple in [a;p;p;l;e]" "apple"
+      [ 'a'; 'p'; 'p'; 'l'; 'e' ]
+      true;
+  ]
+
+let draw_nletters_psize_test =
+  create_many_draw_nletters_psize_test [] 100
+
+let draw_nletters_hsize_test =
+  create_many_draw_nletters_hsize_test [] 10
+
 let game_tests = []
 
 let suite =
-  "test suite for Project" >::: List.flatten [ board_tests; game_tests ]
+  "test suite for Project"
+  >::: List.flatten
+         [
+           hand_tests;
+           draw_nletters_psize_test;
+           draw_nletters_hsize_test;
+         ]
 
 let _ = run_test_tt_main suite
