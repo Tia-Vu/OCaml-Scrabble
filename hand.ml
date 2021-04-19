@@ -1,15 +1,12 @@
-type t = unit
+(* type t = unit
 
-type move_possibility =
-  | Possible of t
-  | Impossible
+   type move_possibility = | Possible of t | Impossible
 
-let make_move hand move = failwith "Unimplemented"
+   let make_move hand move = failwith "Unimplemented"
 
-let new_hand pool = failwith "Unimplemented"
+   let new_hand pool = failwith "Unimplemented"
 
-let to_list hand = failwith "Unimplemented"
-
+   let to_list hand = failwith "Unimplemented" *)
 (*Above is mine, below is sunwook's*)
 
 type t = char list
@@ -82,3 +79,5 @@ let has_word word hand =
 
 (*PLACEHOLDER*)
 let spend_word word hand = hand
+
+let fill_hand pool max hand = failwith "Unimplemented"
