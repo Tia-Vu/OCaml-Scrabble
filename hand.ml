@@ -68,3 +68,5 @@ let has_word word hand =
 
 (*PLACEHOLDER*)
 let spend_word word hand = hand
+
+let fill_hand pool max hand = failwith "Unimplemented"

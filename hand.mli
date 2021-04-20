@@ -29,3 +29,7 @@ val has_word : string -> t -> bool
     Requires: [has_word word hand = true] *)
 
 val spend_word : string -> t -> t
+
+(**[fill_hand] draws letters from a pool and adds to the old hand until
+   the max number of tiles in the hand is reached.*)
+val fill_hand : Pool.t -> int -> t -> t

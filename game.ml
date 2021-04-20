@@ -1,4 +1,5 @@
 open Board
+open Hand
 open Display
 open Score
 open Pool
@@ -8,6 +9,9 @@ open Yojson.Basic.Util
     like scores = Score.t once Score is implemented.*)
 type game_state = {
   board : Board.t;
+  hand : Hand.t;
+  (* Things to potentially add: hand: ; scores:[0,1,2,] tilepool:
+     shuffle (private), draw x tiles (public), is_emtpy, initialization *)
   (* Things to potentially add: hand: ; scores:[0,1,2,] tilepool:
      shuffle (private), draw x tiles (public), is_emtpy, initialization *)
   (* Associated list to lookup point for letter*)
@@ -34,7 +38,7 @@ let read_input_move () =
 
 exception Malformed
 
-let parse_place_word (s : string) : place_word_command =
+let rec parse_place_word (s : string) : place_word_command =
   let parsed = String.split_on_char ' ' s in
   match parsed with
   | [ w; x; y; dir ] ->
@@ -42,37 +46,40 @@ let parse_place_word (s : string) : place_word_command =
         word = w;
         start_coord = (int_of_string x, int_of_string y);
         direction =
-          ( if dir = "hor" then true
+          (if dir = "hor" then true
           else if dir = "ver" then false
           else raise Malformed
             (*TODO if dir is anything else than "hor" or "ver" then it
-              fails*) );
+              fails*));
       }
   | _ -> raise Malformed
 
-(**[input_move] prompts the player for a move in the form of "word x y
-   direction" and returns it.*)
-let input_move () =
-  print_endline "Make your move:";
-  print_string "> ";
-  parse_place_word (read_line ())
-
-(**[update_game_state] is the new game state after the board and score
-   in old state [s] is updated using the passed in [move].*)
+(**[update_game_state] is the new game state after the board, hand, and
+   score in old state [s] is updated using the passed in move[input].*)
 let update_game_state s input =
-  match parse_place_word input with
-  | exception Malformed -> raise Malformed
-  | cmd ->
-      let placed =
-        place_word s.board cmd.word cmd.start_coord cmd.direction
-      in
-      (*OLD: Later when we have scores { board = fst placed; scores =
-        update_score s.scores (snd placed) }*)
-      { s with board = placed }
+  match input with
+  | "Draw" ->
+      let redrawn_hand = draw_nletters s.pool 10 (empty_hand ()) in
+      { s with board = s.board; hand = redrawn_hand }
+  | _ -> (
+      match parse_place_word input with
+      | exception Malformed -> raise Malformed
+      | cmd ->
+          let placed =
+            place_word s.board cmd.word cmd.start_coord cmd.direction
+          in
+          let new_hand =
+            s.hand |> spend_word cmd.word |> fill_hand s.pool 7
+          in
+          (*OLD: Later when we have scores, update this part of the
+            record*)
+          { s with board = placed; hand = new_hand })
 
-(** [play_game] runs each turn, updating the game state, printing the
-    new board (and score, when implemented), and checks if the game
-    should terminate.*)
+(** [play_game] runs each turn. If the game should not terminate yet, it
+    will prompt for user input and update the game state accordingly. If
+    the user input is not a valid move, it will prompt for another move.
+    If the input is valid, the game state will change, and the new board
+    and hand (and score, when implemented) will be printed.*)
 let play_game s =
   let rec pass_turns state continue =
     match continue with
@@ -88,7 +95,8 @@ let play_game s =
             pass_turns state (continue_game state)
         | new_state ->
             print_board new_state.board;
-            pass_turns new_state (continue_game new_state) )
+            print_hand new_state.hand;
+            pass_turns new_state (continue_game new_state))
     | false -> print_endline "No more moves can be made."
   in
   pass_turns s true
@@ -118,12 +126,15 @@ let read_lpts file_name =
 let run () =
   print_intro ();
   let new_board = empty_board (dict_prompt ()) 25 in
+  let new_pool = init_pool () in
   (*TODO: Replace 6 with user input*)
   play_game
     {
       board = new_board;
+      (*TODO: replace 7 tiles with something else?*)
+      hand = fill_hand new_pool 7 (empty_hand ());
       letter_points = read_lpts "letter_points.json";
-      pool = Pool.init_pool ();
+      pool = new_pool;
     };
 
   print_end ();
