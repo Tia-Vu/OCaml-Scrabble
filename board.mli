@@ -13,6 +13,11 @@ exception IllegalMove of string
     json file.*)
 val empty_board : Yojson.Basic.t -> int -> t
 
+(** [requires_letters board word (row,col) dir] returns the required
+    letters to place [word] on [board] starting at [(row,col)] in
+    direction [dir] *)
+val requires_letters : t -> string -> int * int -> bool -> char list
+
 (** [place_word] takes in a board and a move (word, starting coordinate,
     direction to place the word - [true] if horizontal, [false] if
     vertical), and returns the board after placing the word on board if

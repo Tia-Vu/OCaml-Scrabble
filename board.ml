@@ -385,6 +385,14 @@ let placement_is_legal t word start_coord direction =
   if direction then placement_is_legal_hor t word start_coord
   else placement_is_legal_ver t word start_coord
 
+let requires_letters_hor t word (row, col) = []
+
+let requires_letters_ver t word (row, col) = []
+
+let requires_letters t word start_coord direction =
+  if direction then requires_letters_hor t word start_coord
+  else requires_letters_ver t word start_coord
+
 let place_word t word start_coord direction =
   match placement_is_legal t word start_coord direction with
   | true -> place_word_no_validation t word start_coord direction
