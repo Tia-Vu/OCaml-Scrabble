@@ -14,6 +14,10 @@ let to_letter_lst word =
   in
   to_letter_lst_h word []
 
+(*given the letter and bonus, it calculates the value of that tile
+  placement on the board and updates the score*)
+let add_bonus lttr_score bonus = "failwith unimplemented"
+
 let letter_score lttr =
   match lttr with
   | 'a' -> 1
@@ -55,6 +59,6 @@ let get_added_score words =
   List.fold_left (fun acc word -> acc + word_score word) 0 words
 
 (*PLACEHOLDER*)
-let update_score scores score_to_add = scores + score_to_add
+let update_score scores new_words = scores + get_added_score new_words
 
 let to_string scores = string_of_int

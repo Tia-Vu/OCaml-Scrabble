@@ -4,9 +4,8 @@
 type t
 
 (** [update_score] takes an old state of score and adds a new amount of
-    points to the right player's score. TODO: how to pass in which
-    player to add score to?*)
-val update_score : t -> int -> t
+    points to the score based on which new words are formed*)
+val update_score : t -> string list -> t
 
 val create : unit -> t
 
