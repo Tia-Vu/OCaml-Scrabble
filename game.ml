@@ -15,6 +15,7 @@ type game_state = {
   (* Things to potentially add: hand: ; scores:[0,1,2,] tilepool:
      shuffle (private), draw x tiles (public), is_emtpy, initialization *)
   (* Associated list to lookup point for letter*)
+  score : Score.t;
   letter_points : (char * int) list;
   (* Letter pool of the game*)
   pool : Pool.t;
@@ -46,11 +47,11 @@ let rec parse_place_word (s : string) : place_word_command =
         word = w;
         start_coord = (int_of_string x, int_of_string y);
         direction =
-          (if dir = "hor" then true
+          ( if dir = "hor" then true
           else if dir = "ver" then false
           else raise Malformed
             (*TODO if dir is anything else than "hor" or "ver" then it
-              fails*));
+              fails*) );
       }
   | _ -> raise Malformed
 
@@ -73,7 +74,7 @@ let update_game_state s input =
           in
           (*OLD: Later when we have scores, update this part of the
             record*)
-          { s with board = placed; hand = new_hand })
+          { s with board = placed; hand = new_hand } )
 
 (** [play_game] runs each turn. If the game should not terminate yet, it
     will prompt for user input and update the game state accordingly. If
@@ -96,7 +97,7 @@ let play_game s =
         | new_state ->
             print_board new_state.board;
             print_hand new_state.hand;
-            pass_turns new_state (continue_game new_state))
+            pass_turns new_state (continue_game new_state) )
     | false -> print_endline "No more moves can be made."
   in
   pass_turns s true

@@ -1,6 +1,6 @@
-type t = int list list
+type t = int
 
-let create () = [ [] ] (*PLACEHOLDER*)
+let create () = 0
 
 (*PLACEHOLDER*)
 let update_score scores score_to_add = scores
