@@ -14,7 +14,9 @@ val size : t -> int
 
 (** [draw_nletters pool n hand] draws [n] letters from [pool] to hand.
     If there are less than [n] letters in [pool], draw as much as
-    possible. *)
+    possible.
+
+    Requires: n >= 0 *)
 
 val draw_nletters : Pool.t -> int -> t -> t
 
@@ -33,3 +35,5 @@ val spend_word : string -> t -> t
 (**[fill_hand] draws letters from a pool and adds to the old hand until
    the max number of tiles in the hand is reached.*)
 val fill_hand : Pool.t -> int -> t -> t
+
+val to_string : t -> string

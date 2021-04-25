@@ -1,5 +1,6 @@
 open Board
 open Score
+open Hand
 
 val print_board : Board.t -> unit
 

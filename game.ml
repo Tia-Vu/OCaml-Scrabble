@@ -60,7 +60,7 @@ let rec parse_place_word (s : string) : place_word_command =
 let update_game_state s input =
   match input with
   | "Draw" ->
-      let redrawn_hand = draw_nletters s.pool 10 (empty_hand ()) in
+      let redrawn_hand = draw_nletters s.pool 7 (empty_hand ()) in
       { s with board = s.board; hand = redrawn_hand }
   | _ -> (
       match parse_place_word input with
@@ -129,14 +129,24 @@ let run () =
   let new_board = empty_board (dict_prompt ()) 25 in
   let new_pool = init_pool () in
   (*TODO: Replace 6 with user input*)
-  play_game
+  let init_state =
     {
       board = new_board;
       (*TODO: replace 7 tiles with something else?*)
-      hand = fill_hand new_pool 7 (empty_hand ());
+      hand = empty_hand ();
       letter_points = read_lpts "letter_points.json";
       pool = new_pool;
-    };
+      score = Score.create ();
+    }
+  in
+  let init_state =
+    {
+      init_state with
+      hand = fill_hand init_state.pool 7 (empty_hand ());
+    }
+  in
+  print_hand init_state.hand;
+  play_game init_state;
 
   print_end ();
   exit 0
