@@ -385,8 +385,10 @@ let placement_is_legal t word start_coord direction =
   if direction then placement_is_legal_hor t word start_coord
   else placement_is_legal_ver t word start_coord
 
+(*PLACEHOLDER*)
 let requires_letters_hor t word (row, col) = []
 
+(*PLACEHOLDER*)
 let requires_letters_ver t word (row, col) = []
 
 let requires_letters t word start_coord direction =
