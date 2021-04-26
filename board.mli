@@ -27,5 +27,9 @@ val requires_letters : t -> string -> int * int -> bool -> char list
 
 val place_word : t -> string -> int * int -> bool -> t
 
+(**Gets all words created by the given move*)
+
+val get_created_words : t -> string -> int * int -> bool -> string list
+
 (** String represntation of the board*)
 val to_string : t -> string
