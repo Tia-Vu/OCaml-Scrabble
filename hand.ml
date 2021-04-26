@@ -4,6 +4,8 @@ let empty_hand () = []
 
 let size hand = List.length hand
 
+exception InsufficentTiles
+
 let rec draw_nletters pool n hand =
   match n with
   | 0 -> hand
@@ -61,8 +63,8 @@ let rec has_enough w_lcount h_lcount =
       if has_enough_letters l count h_lcount then has_enough t h_lcount
       else false
 
-let has_word word hand =
-  let w_lcount = letter_count (to_letter_lst word) in
+let has_word letter_lst hand =
+  let w_lcount = letter_count letter_lst in
   let h_lcount = letter_count hand in
   has_enough w_lcount h_lcount
 
@@ -92,11 +94,11 @@ let rec lcount_to_list acc = function
   | (c, count) :: t ->
       lcount_to_list (insert_letter_ntimes c count acc) t
 
-let spend_word word hand =
+let spend_word letter_lst hand =
   let _ =
-    if has_word word hand then () else failwith "Does not have word"
+    if has_word letter_lst hand then () else raise InsufficentTiles
   in
-  let w_lcount = letter_count (to_letter_lst word) in
+  let w_lcount = letter_count letter_lst in
   let h_lcount = letter_count hand in
   let h_lcount' = subtract h_lcount w_lcount [] in
   lcount_to_list [] h_lcount'

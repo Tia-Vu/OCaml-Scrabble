@@ -66,6 +66,8 @@ let get_tile (row, col) t =
   if row < 0 || col < 0 || row >= t.n || col >= t.n then init_tile ()
   else t.tile_board.(row).(col)
 
+let get_letter (row, col) t = (get_tile (row, col) t).letter
+
 (*get_adacent_tiles [tile] returns the adjacent tiles starting with the
   tile to the left and going clockwise Precondition: [tile] is a valid
   place on the board*)
@@ -385,15 +387,26 @@ let placement_is_legal t word start_coord direction =
   if direction then placement_is_legal_hor t word start_coord
   else placement_is_legal_ver t word start_coord
 
-(*PLACEHOLDER*)
-let requires_letters_hor t word (row, col) = []
+let rec requires_letters_hor t letter_lst (row, col) acc =
+  match letter_lst with
+  | [] -> acc
+  | h :: lst ->
+      if get_letter (row, col) t = h then
+        requires_letters_hor t lst (row, col + 1) acc
+      else requires_letters_hor t lst (row, col + 1) (h :: acc)
 
-(*PLACEHOLDER*)
-let requires_letters_ver t word (row, col) = []
+let rec requires_letters_ver t letter_lst (row, col) acc =
+  match letter_lst with
+  | [] -> acc
+  | h :: lst ->
+      if get_letter (row, col) t = h then
+        requires_letters_ver t lst (row + 1, col) acc
+      else requires_letters_ver t lst (row + 1, col) (h :: acc)
 
 let requires_letters t word start_coord direction =
-  if direction then requires_letters_hor t word start_coord
-  else requires_letters_ver t word start_coord
+  if direction then
+    requires_letters_hor t (to_letter_lst word) start_coord []
+  else requires_letters_ver t (to_letter_lst word) start_coord []
 
 let place_word t word start_coord direction =
   match placement_is_legal t word start_coord direction with

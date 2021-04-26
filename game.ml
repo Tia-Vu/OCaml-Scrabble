@@ -66,11 +66,15 @@ let update_game_state s input =
       match parse_place_word input with
       | exception Malformed -> raise Malformed
       | cmd ->
+          let req_letters =
+            Board.requires_letters s.board cmd.word cmd.start_coord
+              cmd.direction
+          in
           let placed =
             place_word s.board cmd.word cmd.start_coord cmd.direction
           in
           let new_hand =
-            s.hand |> spend_word cmd.word |> fill_hand s.pool 7
+            s.hand |> spend_word req_letters |> fill_hand s.pool 7
           in
           (*OLD: Later when we have scores, update this part of the
             record*)
@@ -92,6 +96,13 @@ let play_game s =
             pass_turns state (continue_game state)
         | exception Malformed ->
             print_endline "\nThis is not a valid command";
+            print_string "\nPlease try again.\n";
+            pass_turns state (continue_game state)
+        | exception Hand.InsufficentTiles ->
+            print_endline
+              "\n\
+               The hand does not have enough letter tiles to place the \
+               word.";
             print_string "\nPlease try again.\n";
             pass_turns state (continue_game state)
         | new_state ->
