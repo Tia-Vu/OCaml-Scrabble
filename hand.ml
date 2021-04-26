@@ -66,7 +66,45 @@ let has_word word hand =
   let h_lcount = letter_count hand in
   has_enough w_lcount h_lcount
 
-(*PLACEHOLDER*)
-let spend_word word hand = hand
+(** [subtract hlc wlc] reduces the count of letters in [hlc] by its
+    corresponding letter's count in [wlc].*)
+let rec subtract h_lcount w_lcount acc =
+  match h_lcount with
+  | [] -> acc
+  | (c, count) :: t -> (
+      match List.assoc_opt c w_lcount with
+      | None -> subtract t w_lcount ((c, count) :: acc)
+      | Some w_count -> subtract t w_lcount ((c, count - w_count) :: acc)
+      )
 
-let fill_hand pool max hand = failwith "Unimplemented"
+(** [insert_nletters c n lst] inserts [c] to [lst] [n] times.
+
+    Requires: [n] >= 0. *)
+let rec insert_letter_ntimes letter n lst =
+  match n with
+  | 0 -> lst
+  | n -> insert_letter_ntimes letter (n - 1) (letter :: lst)
+
+(** [lcount_to_list acc lcount] creates a list of characters from
+    [lcount].*)
+let rec lcount_to_list acc = function
+  | [] -> acc
+  | (c, count) :: t ->
+      lcount_to_list (insert_letter_ntimes c count acc) t
+
+let spend_word word hand =
+  let _ =
+    if has_word word hand then () else failwith "Does not have word"
+  in
+  let w_lcount = letter_count (to_letter_lst word) in
+  let h_lcount = letter_count hand in
+  let h_lcount' = subtract h_lcount w_lcount [] in
+  lcount_to_list [] h_lcount'
+
+let fill_hand pool max hand = draw_nletters pool (max - size hand) hand
+
+let to_string hand =
+  let s =
+    List.fold_left (fun str c -> str ^ ", " ^ Char.escaped c) "" hand
+  in
+  String.sub s 1 (String.length s - 1)

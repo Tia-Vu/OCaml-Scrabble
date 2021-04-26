@@ -15,6 +15,7 @@ type game_state = {
   (* Things to potentially add: hand: ; scores:[0,1,2,] tilepool:
      shuffle (private), draw x tiles (public), is_emtpy, initialization *)
   (* Associated list to lookup point for letter*)
+  score : Score.t;
   letter_points : (char * int) list;
   (* Letter pool of the game*)
   pool : Pool.t;
@@ -46,11 +47,11 @@ let rec parse_place_word (s : string) : place_word_command =
         word = w;
         start_coord = (int_of_string x, int_of_string y);
         direction =
-          (if dir = "hor" then true
+          ( if dir = "hor" then true
           else if dir = "ver" then false
           else raise Malformed
             (*TODO if dir is anything else than "hor" or "ver" then it
-              fails*));
+              fails*) );
       }
   | _ -> raise Malformed
 
@@ -59,7 +60,7 @@ let rec parse_place_word (s : string) : place_word_command =
 let update_game_state s input =
   match input with
   | "Draw" ->
-      let redrawn_hand = draw_nletters s.pool 10 (empty_hand ()) in
+      let redrawn_hand = draw_nletters s.pool 7 (empty_hand ()) in
       { s with board = s.board; hand = redrawn_hand }
   | _ -> (
       match parse_place_word input with
@@ -73,7 +74,7 @@ let update_game_state s input =
           in
           (*OLD: Later when we have scores, update this part of the
             record*)
-          { s with board = placed; hand = new_hand })
+          { s with board = placed; hand = new_hand } )
 
 (** [play_game] runs each turn. If the game should not terminate yet, it
     will prompt for user input and update the game state accordingly. If
@@ -96,7 +97,7 @@ let play_game s =
         | new_state ->
             print_board new_state.board;
             print_hand new_state.hand;
-            pass_turns new_state (continue_game new_state))
+            pass_turns new_state (continue_game new_state) )
     | false -> print_endline "No more moves can be made."
   in
   pass_turns s true
@@ -128,14 +129,24 @@ let run () =
   let new_board = empty_board (dict_prompt ()) 25 in
   let new_pool = init_pool () in
   (*TODO: Replace 6 with user input*)
-  play_game
+  let init_state =
     {
       board = new_board;
       (*TODO: replace 7 tiles with something else?*)
-      hand = fill_hand new_pool 7 (empty_hand ());
+      hand = empty_hand ();
       letter_points = read_lpts "letter_points.json";
       pool = new_pool;
-    };
+      score = Score.create ();
+    }
+  in
+  let init_state =
+    {
+      init_state with
+      hand = fill_hand init_state.pool 7 (empty_hand ());
+    }
+  in
+  print_hand init_state.hand;
+  play_game init_state;
 
   print_end ();
   exit 0
