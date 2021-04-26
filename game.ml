@@ -66,11 +66,15 @@ let update_game_state s input =
       match parse_place_word input with
       | exception Malformed -> raise Malformed
       | cmd ->
+          let req_letters =
+            Board.requires_letters s.board cmd.word cmd.start_coord
+              cmd.direction
+          in
           let placed =
             place_word s.board cmd.word cmd.start_coord cmd.direction
           in
           let new_hand =
-            s.hand |> spend_word cmd.word |> fill_hand s.pool 7
+            s.hand |> spend_word req_letters |> fill_hand s.pool 7
           in
           (*OLD: Later when we have scores, update this part of the
             record*)
