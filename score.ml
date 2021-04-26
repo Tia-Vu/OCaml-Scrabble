@@ -1,6 +1,6 @@
 type t = int
 
-let create () = 0 (*PLACEHOLDER*)
+let create () = 0
 
 let to_letter_lst word =
   (*REMARK: The same function is in board*)
@@ -16,7 +16,7 @@ let to_letter_lst word =
 
 (*given the letter and bonus, it calculates the value of that tile
   placement on the board and updates the score*)
-let add_bonus lttr_score bonus = "failwith unimplemented"
+let add_bonus lttr_score bonus = failwith "unimplemented"
 
 let letter_score lttr =
   match lttr with
@@ -58,7 +58,8 @@ let word_score word =
 let get_added_score words =
   List.fold_left (fun acc word -> acc + word_score word) 0 words
 
-(*PLACEHOLDER*)
+(*[update_score score new_words] returns the updated score given the new
+  words [new_words] formed by a move*)
 let update_score scores new_words = scores + get_added_score new_words
 
-let to_string scores = string_of_int
+let to_string score = string_of_int score
