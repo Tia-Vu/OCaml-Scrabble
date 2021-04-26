@@ -25,10 +25,13 @@ val draw_nletters : Pool.t -> int -> t -> t
 
 val has_word : char list -> t -> bool
 
+(** Raised when there are not enough tiles in the hand*)
+exception InsufficentTiles
+
 (** [spend_word word hand] gives new hand after spenidng letter tiles
     from [hand] to create [word].
 
-    Requires: [has_word word hand = true] *)
+    Raises: InsufficientTiles *)
 
 val spend_word : char list -> t -> t
 

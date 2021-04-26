@@ -98,6 +98,13 @@ let play_game s =
             print_endline "\nThis is not a valid command";
             print_string "\nPlease try again.\n";
             pass_turns state (continue_game state)
+        | exception Hand.InsufficentTiles ->
+            print_endline
+              "\n\
+               The hand does not have enough letter tiles to place the \
+               word.";
+            print_string "\nPlease try again.\n";
+            pass_turns state (continue_game state)
         | new_state ->
             print_board new_state.board;
             print_hand new_state.hand;

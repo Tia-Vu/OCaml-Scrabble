@@ -4,6 +4,8 @@ let empty_hand () = []
 
 let size hand = List.length hand
 
+exception InsufficentTiles
+
 let rec draw_nletters pool n hand =
   match n with
   | 0 -> hand
@@ -94,8 +96,7 @@ let rec lcount_to_list acc = function
 
 let spend_word letter_lst hand =
   let _ =
-    if has_word letter_lst hand then ()
-    else failwith "Insufficient letter tiles"
+    if has_word letter_lst hand then () else raise InsufficentTiles
   in
   let w_lcount = letter_count letter_lst in
   let h_lcount = letter_count hand in
