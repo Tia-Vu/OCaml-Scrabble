@@ -439,7 +439,7 @@ let get_created_words_ver t word start_coord =
   let rec get_created_words_ver_h word_lst len (row, col) =
     if len = 0 then word_lst
     else if tile_occupied (get_tile (row, col) t) then
-      get_created_words_ver_h word_lst (len - 1) (row, col + 1)
+      get_created_words_ver_h word_lst (len - 1) (row + 1, col)
     else
       get_created_words_ver_h
         (horizontal_word_of new_t (row, col) :: word_lst)
