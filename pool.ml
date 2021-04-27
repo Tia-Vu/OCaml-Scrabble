@@ -6,6 +6,7 @@ exception DrawFromEmpty
 
 (** Reference from https://scrabble.hasbro.com/en-us/faq*)
 let init_pool () =
+  let _ = Random.self_init () in
   {
     letters =
       [
@@ -123,11 +124,11 @@ let remove_nth n lst =
     | 0 -> (
         match back with
         | [] -> List.rev front
-        | h :: t -> List.rev front @ t)
+        | h :: t -> List.rev front @ t )
     | x -> (
         match back with
         | [] -> failwith "n out of bounds"
-        | h :: t -> remove_nth_aux (h :: front) t (x - 1))
+        | h :: t -> remove_nth_aux (h :: front) t (x - 1) )
   in
   remove_nth_aux [] lst n
 
