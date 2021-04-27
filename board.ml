@@ -417,10 +417,13 @@ let place_word t word start_coord direction =
 
 (*Gets all words formed by the horizontal move including 1 letter words*)
 let get_created_words_hor t word start_coord =
-  let arr = [ horizontal_word_of t start_coord ] in
+  let new_t = place_word_no_validation t word start_coord true in
+  let arr = [ horizontal_word_of new_t start_coord ] in
   let length = String.length word in
   let rec get_created_words_hor_h word_lst len (row, col) =
     if len = 0 then word_lst
+    else if tile_occupied (get_tile (row, col) t) then
+      get_created_words_hor_h word_lst (len - 1) (row, col + 1)
     else
       get_created_words_hor_h
         (vertical_word_of t (row, col) :: word_lst)
@@ -431,10 +434,13 @@ let get_created_words_hor t word start_coord =
 
 (*Gets all words formed by the vertical move including 1 letter words*)
 let get_created_words_ver t word start_coord =
-  let arr = [ vertical_word_of t start_coord ] in
+  let new_t = place_word_no_validation t word start_coord false in
+  let arr = [ vertical_word_of new_t start_coord ] in
   let length = String.length word in
   let rec get_created_words_ver_h word_lst len (row, col) =
     if len = 0 then word_lst
+    else if tile_occupied (get_tile (row, col) t) then
+      get_created_words_ver_h word_lst (len - 1) (row, col + 1)
     else
       get_created_words_ver_h
         (horizontal_word_of t (row, col) :: word_lst)
