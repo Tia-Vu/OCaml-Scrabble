@@ -94,11 +94,13 @@ let rec create_many_draw_nletters_hsize_test test_list = function
     [expected]. *)
 let has_word_test
     (name : string)
-    (word : string)
+    (letter_lst : char list)
     (hand : Hand.t)
     (expected : bool) : test =
   "has_word: " ^ name >:: fun _ ->
-  assert_equal expected (has_word word hand) ~printer:string_of_bool
+  assert_equal expected
+    (has_word letter_lst hand)
+    ~printer:string_of_bool
 
 (********************************************************************
   End helper functions.
@@ -128,7 +130,8 @@ let board_tests =
 
 let hand_tests =
   [
-    has_word_test "apple in [a;p;p;l;e]" "apple"
+    has_word_test "apple in [a;p;p;l;e]"
+      [ 'a'; 'p'; 'p'; 'l'; 'e' ]
       [ 'a'; 'p'; 'p'; 'l'; 'e' ]
       true;
   ]
