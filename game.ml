@@ -33,8 +33,7 @@ let continue_game game_state = true
 
 (**[read_input_move] prompts the player for a move and returns it.*)
 let read_input_move () =
-  print_endline "\nMake your move:";
-  print_string "> ";
+  print_move_instructions ();
   read_line ()
 
 exception Malformed
@@ -60,7 +59,7 @@ let rec parse_place_word (s : string) : place_word_command =
 let update_game_state s input =
   match input with
   | "Draw" ->
-      print_endline "You discard your hand and redraw.";
+      print_endline "\nYou discard your hand and redraw.";
       let redrawn_hand = draw_nletters s.pool 7 (empty_hand ()) in
       { s with board = s.board; hand = redrawn_hand }
   | _ -> (
@@ -82,7 +81,7 @@ let update_game_state s input =
             s.hand |> spend_word req_letters |> fill_hand s.pool 7
           in
           let new_score = update_score s.score formed_words in
-          print_endline ("You place the word " ^ cmd.word ^ ".");
+          print_endline ("\nYou place the word " ^ cmd.word ^ ".");
           { s with board = placed; hand = new_hand; score = new_score })
 
 (** [play_game] runs each turn. If the game should not terminate yet, it
