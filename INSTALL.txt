@@ -4,4 +4,4 @@ make play
 dictionary.json
 3) Then it will prompt you to place a word with the letters in your hand. Place a word with the format {word} {row} {column} {"hor"/"ver"}. (row column starts from 0, top left). 
 4) Now try placing more words! They have to be connected to the existing tiles (as scrabble does!). The points will also be updated as you place the words.
-5) For now the game runs forever. Press 'ctrl-d' to quit. 
+5) For now the game runs forever. Press 'ctrl-c' or 'ctrl-d' to quit. 
