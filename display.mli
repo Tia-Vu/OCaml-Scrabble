@@ -8,6 +8,8 @@ val print_scores : Score.t -> unit
 
 val print_hand : Hand.t -> unit
 
+val print_move_instructions : unit -> unit
+
 val print_intro : unit -> unit
 
 val print_end : unit -> unit
