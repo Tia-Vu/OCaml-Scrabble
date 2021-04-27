@@ -379,9 +379,8 @@ let placement_is_legal t word start_coord direction =
   if
     (not t.is_empty)
     && not
-         (tiles_near_current_tiles t
-            (String.length word - 1)
-            start_coord direction)
+         (tiles_near_current_tiles t (String.length word) start_coord
+            direction)
   then raise (IllegalMove "Not near any existing tiles.")
   else ();
   if direction then placement_is_legal_hor t word start_coord

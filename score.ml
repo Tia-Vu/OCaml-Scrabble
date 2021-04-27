@@ -48,6 +48,10 @@ let letter_score lttr =
   | 'z' -> 10
   | _ -> 0
 
+(*Based on a custom list of bonus words, returns whether the word is a
+  bonus word*)
+let is_bonus bonus word = List.mem word bonus
+
 (*Gets the score value of a certain word*)
 let word_score word =
   let letters = to_letter_lst word in
