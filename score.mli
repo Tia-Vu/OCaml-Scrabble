@@ -3,8 +3,8 @@
 
 type t
 
-(** [update_score] takes an old state of score and adds a new amount of
-    points to the score based on which new words are formed*)
+(** [update_score] takes an old state of score and a list of new words
+    that are formed, and adds an amount of points to the score.*)
 val update_score : t -> string list -> t
 
 val create : unit -> t

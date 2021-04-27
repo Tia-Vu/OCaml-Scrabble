@@ -110,13 +110,26 @@ let init_pool () =
       ];
   }
 
-(** [remove_nth_tr] is the tail recursion version of [remove_nth]*)
-let rec remove_nth_tr front (h :: back) = function
-  | 0 -> List.rev front @ back
-  | n -> remove_nth_tr (h :: front) back (n - 1)
+(* (** [remove_nth_tr] is the tail recursion version of [remove_nth]*)
+   let rec remove_nth_tr front (h :: back) = function | 0 -> List.rev
+   front @ back | n -> if back = [] then failwith "n out of bounds" else
+   remove_nth_tr (h :: front) back (n - 1)
+
+   let remove_nth n lst = remove_nth_tr [] lst n*)
 
 (** [remove_nth n lst] gives a list with the [n]th element removed.*)
-let remove_nth n lst = remove_nth_tr [] lst n
+let remove_nth n lst =
+  let rec remove_nth_aux front back = function
+    | 0 -> (
+        match back with
+        | [] -> List.rev front
+        | h :: t -> List.rev front @ t)
+    | x -> (
+        match back with
+        | [] -> failwith "n out of bounds"
+        | h :: t -> remove_nth_aux (h :: front) t (x - 1))
+  in
+  remove_nth_aux [] lst n
 
 let size pool = List.length pool.letters
 

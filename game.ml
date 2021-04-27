@@ -47,11 +47,11 @@ let rec parse_place_word (s : string) : place_word_command =
         word = w;
         start_coord = (int_of_string x, int_of_string y);
         direction =
-          ( if dir = "hor" then true
+          (if dir = "hor" then true
           else if dir = "ver" then false
           else raise Malformed
             (*TODO if dir is anything else than "hor" or "ver" then it
-              fails*) );
+              fails*));
       }
   | _ -> raise Malformed
 
@@ -60,6 +60,7 @@ let rec parse_place_word (s : string) : place_word_command =
 let update_game_state s input =
   match input with
   | "Draw" ->
+      print_endline "You discard your hand and redraw.";
       let redrawn_hand = draw_nletters s.pool 7 (empty_hand ()) in
       { s with board = s.board; hand = redrawn_hand }
   | _ -> (
@@ -67,18 +68,22 @@ let update_game_state s input =
       | exception Malformed -> raise Malformed
       | cmd ->
           let req_letters =
-            Board.requires_letters s.board cmd.word cmd.start_coord
+            requires_letters s.board cmd.word cmd.start_coord
               cmd.direction
           in
           let placed =
             place_word s.board cmd.word cmd.start_coord cmd.direction
           in
+          let formed_words =
+            get_created_words s.board cmd.word cmd.start_coord
+              cmd.direction
+          in
           let new_hand =
             s.hand |> spend_word req_letters |> fill_hand s.pool 7
           in
-          (*OLD: Later when we have scores, update this part of the
-            record*)
-          { s with board = placed; hand = new_hand } )
+          let new_score = update_score s.score formed_words in
+          print_endline ("You place the word " ^ cmd.word ^ ".");
+          { s with board = placed; hand = new_hand; score = new_score })
 
 (** [play_game] runs each turn. If the game should not terminate yet, it
     will prompt for user input and update the game state accordingly. If
@@ -108,7 +113,8 @@ let play_game s =
         | new_state ->
             print_board new_state.board;
             print_hand new_state.hand;
-            pass_turns new_state (continue_game new_state) )
+            print_scores new_state.score;
+            pass_turns new_state (continue_game new_state))
     | false -> print_endline "No more moves can be made."
   in
   pass_turns s true
@@ -143,7 +149,6 @@ let run () =
   let init_state =
     {
       board = new_board;
-      (*TODO: replace 7 tiles with something else?*)
       hand = empty_hand ();
       letter_points = read_lpts "letter_points.json";
       pool = new_pool;
@@ -156,6 +161,7 @@ let run () =
       hand = fill_hand init_state.pool 7 (empty_hand ());
     }
   in
+  print_board init_state.board;
   print_hand init_state.hand;
   play_game init_state;
 
