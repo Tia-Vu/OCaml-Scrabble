@@ -46,11 +46,11 @@ let rec parse_place_word (s : string) : place_word_command =
         word = w;
         start_coord = (int_of_string x, int_of_string y);
         direction =
-          (if dir = "hor" then true
+          ( if dir = "hor" then true
           else if dir = "ver" then false
           else raise Malformed
             (*TODO if dir is anything else than "hor" or "ver" then it
-              fails*));
+              fails*) );
       }
   | _ -> raise Malformed
 
@@ -82,7 +82,8 @@ let update_game_state s input =
           in
           let new_score = update_score s.score formed_words in
           print_endline ("\nYou place the word " ^ cmd.word ^ ".");
-          { s with board = placed; hand = new_hand; score = new_score })
+          { s with board = placed; hand = new_hand; score = new_score }
+      )
 
 (** [play_game] runs each turn. If the game should not terminate yet, it
     will prompt for user input and update the game state accordingly. If
@@ -95,25 +96,22 @@ let play_game s =
     | true -> (
         match update_game_state state (read_input_move ()) with
         | exception Board.IllegalMove s ->
-            print_endline ("\nThis is an illegal move. " ^ s);
-            print_string "\nPlease try again.\n";
+            print_exc_board_illegal_move s;
+            print_try_again ();
             pass_turns state (continue_game state)
         | exception Malformed ->
-            print_endline "\nThis is not a valid command";
-            print_string "\nPlease try again.\n";
+            print_exc_malformed ();
+            print_try_again ();
             pass_turns state (continue_game state)
         | exception Hand.InsufficentTiles ->
-            print_endline
-              "\n\
-               The hand does not have enough letter tiles to place the \
-               word.";
-            print_string "\nPlease try again.\n";
+            print_exc_hand_insufficient_tiles ();
+            print_try_again ();
             pass_turns state (continue_game state)
         | new_state ->
             print_board new_state.board;
             print_hand new_state.hand;
             print_scores new_state.score;
-            pass_turns new_state (continue_game new_state))
+            pass_turns new_state (continue_game new_state) )
     | false -> print_endline "No more moves can be made."
   in
   pass_turns s true

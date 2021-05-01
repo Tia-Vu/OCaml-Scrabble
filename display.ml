@@ -9,10 +9,29 @@ let print_scores scores =
 let print_hand hand =
   print_endline ("\nYour Hand: " ^ Hand.to_string hand)
 
-let print_move_instructions () =
-  print_endline "\nMake your move!";
+(** [print_separator ()] prints a line of dashes that separates a
+    display*)
+let print_separator () =
+  print_endline "\n------------------------------------------"
+
+let print_try_again () = print_string "\nPlease try again.\n"
+
+let print_exc_board_illegal_move s =
+  print_endline ("\nThis is an illegal move. " ^ s)
+
+let print_exc_malformed () =
+  print_endline "\nThis is not a valid command"
+
+let print_exc_hand_insufficient_tiles () =
   print_endline
-    "You may either enter [Draw] to discard your current hand for a \
+    "\nThe hand does not have enough letter tiles to place the word."
+
+let print_move_instructions () =
+  print_separator ();
+  print_endline "Make your move!";
+  print_endline
+    "\n\
+     You may either enter [Draw] to discard your current hand for a \
      new one, or";
   print_endline
     "enter a move to place on the board in the form of [word row col \
