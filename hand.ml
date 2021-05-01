@@ -106,7 +106,9 @@ let spend_word letter_lst hand =
 let fill_hand pool max hand = draw_nletters pool (max - size hand) hand
 
 let to_string hand =
-  let s =
-    List.fold_left (fun str c -> str ^ ", " ^ Char.escaped c) "" hand
-  in
-  String.sub s 1 (String.length s - 1)
+  if hand = [] then ""
+  else
+    let s =
+      List.fold_left (fun str c -> str ^ ", " ^ Char.escaped c) "" hand
+    in
+    String.sub s 1 (String.length s - 1)
