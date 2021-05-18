@@ -21,3 +21,7 @@ val is_empty : t -> bool
 
    Requires: [is_empty p] = false*)
 val draw_letter : t -> char
+
+(** [to_string p] converts pool [p] to a string, which shows the number
+    of tiles in the pool.*)
+val to_string : t -> string
