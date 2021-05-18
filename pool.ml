@@ -142,3 +142,5 @@ let draw_letter pool =
   let drawn_letter = List.nth pool.letters i in
   pool.letters <- remove_nth i pool.letters;
   drawn_letter
+
+let to_string pool = string_of_int (size pool)

@@ -1,6 +1,7 @@
 open Board
 open Score
 open Hand
+open Pool
 
 val print_board : Board.t -> unit
 
@@ -21,3 +22,5 @@ val print_exc_hand_insufficient_tiles : unit -> unit
 val print_intro : unit -> unit
 
 val print_end : unit -> unit
+
+val print_pool : Pool.t -> unit

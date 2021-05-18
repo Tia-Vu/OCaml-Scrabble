@@ -39,4 +39,5 @@ val spend_word : char list -> t -> t
    the max number of tiles in the hand is reached.*)
 val fill_hand : Pool.t -> int -> t -> t
 
+(** [to_string hand] converts [hand] to string.*)
 val to_string : t -> string
