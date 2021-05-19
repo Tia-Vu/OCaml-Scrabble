@@ -1,0 +1,233 @@
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="Start" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Board" rel="Chapter" href="Board.html">
+<link title="Display" rel="Chapter" href="Display.html">
+<link title="Game" rel="Chapter" href="Game.html">
+<link title="Score" rel="Chapter" href="Score.html">
+<link title="Validation" rel="Chapter" href="Validation.html">
+<link title="Pool" rel="Chapter" href="Pool.html">
+<link title="Hand" rel="Chapter" href="Hand.html"><title>Index of values</title>
+</head>
+<body>
+<div class="navbar">&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;</div>
+<h1>Index of values</h1>
+<table>
+<tr><td align="left"><div>C</div></td></tr>
+<tr><td><a href="Score.html#VALcreate">create</a> [<a href="Score.html">Score</a>]</td>
+<td><div class="info">
+<p><code class="code">create ()</code> is a new, initial score.</p>
+
+</div>
+</td></tr>
+<tr><td align="left"><div>D</div></td></tr>
+<tr><td><a href="Pool.html#VALdraw_letter">draw_letter</a> [<a href="Pool.html">Pool</a>]</td>
+<td><div class="info">
+<p><code class="code">draw_letter p</code> is a random letter from pool <code class="code">p</code></p>
+
+</div>
+</td></tr>
+<tr><td><a href="Hand.html#VALdraw_nletters">draw_nletters</a> [<a href="Hand.html">Hand</a>]</td>
+<td></td></tr>
+<tr><td align="left"><div>E</div></td></tr>
+<tr><td><a href="Board.html#VALempty_board">empty_board</a> [<a href="Board.html">Board</a>]</td>
+<td><div class="info">
+<p><code class="code">empty_board j</code> initializes an empty board with a dictionary stored
+    in a json file with name j.json.</p>
+
+</div>
+</td></tr>
+<tr><td><a href="Hand.html#VALempty_hand">empty_hand</a> [<a href="Hand.html">Hand</a>]</td>
+<td></td></tr>
+<tr><td align="left"><div>F</div></td></tr>
+<tr><td><a href="Hand.html#VALfill_hand">fill_hand</a> [<a href="Hand.html">Hand</a>]</td>
+<td><div class="info">
+<p><code class="code">fill_hand pool max hand</code> is the hand created from drawing letters
+   from <code class="code">pool</code> and adds to the old <code class="code">hand</code> until the <code class="code">max</code> number of
+   tiles in the hand is reached.</p>
+
+</div>
+</td></tr>
+<tr><td align="left"><div>G</div></td></tr>
+<tr><td><a href="Board.html#VALget_created_words">get_created_words</a> [<a href="Board.html">Board</a>]</td>
+<td></td></tr>
+<tr><td align="left"><div>H</div></td></tr>
+<tr><td><a href="Hand.html#VALhas_word">has_word</a> [<a href="Hand.html">Hand</a>]</td>
+<td></td></tr>
+<tr><td align="left"><div>I</div></td></tr>
+<tr><td><a href="Pool.html#VALinit_pool">init_pool</a> [<a href="Pool.html">Pool</a>]</td>
+<td><div class="info">
+<p><code class="code">init_pool ()</code> is a new tile pool.</p>
+
+</div>
+</td></tr>
+<tr><td><a href="Pool.html#VALis_empty">is_empty</a> [<a href="Pool.html">Pool</a>]</td>
+<td><div class="info">
+<p><code class="code">is_empty p</code> is true if and only if <code class="code">p</code> is empty.</p>
+
+</div>
+</td></tr>
+<tr><td><a href="Validation.html#VALis_valid">is_valid</a> [<a href="Validation.html">Validation</a>]</td>
+<td><div class="info">
+<p><code class="code">is_valid</code> is the validity of a move on a certain <code class="code">board</code> and
+    <code class="code">dict</code>ionary.</p>
+
+</div>
+</td></tr>
+<tr><td align="left"><div>P</div></td></tr>
+<tr><td><a href="Board.html#VALplace_word">place_word</a> [<a href="Board.html">Board</a>]</td>
+<td></td></tr>
+<tr><td><a href="Display.html#VALprint_board">print_board</a> [<a href="Display.html">Display</a>]</td>
+<td><div class="info">
+<p><code class="code">print_board board</code> pretty prints <code class="code">board</code> on the command prompt.</p>
+
+</div>
+</td></tr>
+<tr><td><a href="Display.html#VALprint_end">print_end</a> [<a href="Display.html">Display</a>]</td>
+<td><div class="info">
+<p><code class="code">print_end ()</code> declares the end of the game on the command prompt.</p>
+
+</div>
+</td></tr>
+<tr><td><a href="Display.html#VALprint_exc_board_illegal_move">print_exc_board_illegal_move</a> [<a href="Display.html">Display</a>]</td>
+<td><div class="info">
+<p><code class="code">print_exc_board_illegal_move s</code> states that the move with word <code class="code">s</code>
+    was illegal on the command prompt.</p>
+
+</div>
+</td></tr>
+<tr><td><a href="Display.html#VALprint_exc_hand_insufficient_tiles">print_exc_hand_insufficient_tiles</a> [<a href="Display.html">Display</a>]</td>
+<td><div class="info">
+<p><code class="code">print_exc_hand_insufficient_tiles ()</code> states a player's hand has
+    insufficient tiles to play the move they entered on the command
+    prompt.</p>
+
+</div>
+</td></tr>
+<tr><td><a href="Display.html#VALprint_exc_malformed">print_exc_malformed</a> [<a href="Display.html">Display</a>]</td>
+<td><div class="info">
+<p><code class="code">print_exc_malformed ()</code> states that the user input for a move was
+    malformed on the command prompt.</p>
+
+</div>
+</td></tr>
+<tr><td><a href="Display.html#VALprint_hand">print_hand</a> [<a href="Display.html">Display</a>]</td>
+<td><div class="info">
+<p><code class="code">print_hand hand</code> pretty prints <code class="code">hand</code> on the command prompt.</p>
+
+</div>
+</td></tr>
+<tr><td><a href="Display.html#VALprint_intro">print_intro</a> [<a href="Display.html">Display</a>]</td>
+<td><div class="info">
+<p><code class="code">print_intro ()</code> declares the start of the game on the command
+    prompt.</p>
+
+</div>
+</td></tr>
+<tr><td><a href="Display.html#VALprint_move_instructions">print_move_instructions</a> [<a href="Display.html">Display</a>]</td>
+<td><div class="info">
+<p><code class="code">print_move_instructions ()</code> prints instructions to tell players
+    what format to input their move on the command prompt.</p>
+
+</div>
+</td></tr>
+<tr><td><a href="Display.html#VALprint_player_turn">print_player_turn</a> [<a href="Display.html">Display</a>]</td>
+<td><div class="info">
+<p><code class="code">print_player_turn n</code> declares that it is player number <code class="code">n</code>'s turn
+    on the command prompt.</p>
+
+</div>
+</td></tr>
+<tr><td><a href="Display.html#VALprint_round_end">print_round_end</a> [<a href="Display.html">Display</a>]</td>
+<td><div class="info">
+<p><code class="code">print_round_end ()</code> declares the end of every round on the command
+    prompt.</p>
+
+</div>
+</td></tr>
+<tr><td><a href="Display.html#VALprint_round_start">print_round_start</a> [<a href="Display.html">Display</a>]</td>
+<td><div class="info">
+<p><code class="code">print_round_start ()</code> declares the start of every round on the
+    command prompt.</p>
+
+</div>
+</td></tr>
+<tr><td><a href="Display.html#VALprint_scores">print_scores</a> [<a href="Display.html">Display</a>]</td>
+<td><div class="info">
+<p><code class="code">print_scores score</code> pretty prints <code class="code">score</code> on the command prompt.</p>
+
+</div>
+</td></tr>
+<tr><td><a href="Display.html#VALprint_separator">print_separator</a> [<a href="Display.html">Display</a>]</td>
+<td><div class="info">
+<p><code class="code">print_separator ()</code> prints a line of dashes on the command prompt.</p>
+
+</div>
+</td></tr>
+<tr><td><a href="Display.html#VALprint_try_again">print_try_again</a> [<a href="Display.html">Display</a>]</td>
+<td><div class="info">
+<p><code class="code">print_try_again ()</code> tells users to try again on the command prompt.</p>
+
+</div>
+</td></tr>
+<tr><td align="left"><div>R</div></td></tr>
+<tr><td><a href="Board.html#VALrequires_letters">requires_letters</a> [<a href="Board.html">Board</a>]</td>
+<td><div class="info">
+<p><code class="code">requires_letters board word (row,col) dir</code> is the required letters
+    to place <code class="code">word</code> on <code class="code">board</code> starting at <code class="code">(row,col)</code> in direction
+    <code class="code">dir</code></p>
+
+</div>
+</td></tr>
+<tr><td><a href="Game.html#VALrun">run</a> [<a href="Game.html">Game</a>]</td>
+<td></td></tr>
+<tr><td align="left"><div>S</div></td></tr>
+<tr><td><a href="Hand.html#VALsize">size</a> [<a href="Hand.html">Hand</a>]</td>
+<td></td></tr>
+<tr><td><a href="Pool.html#VALsize">size</a> [<a href="Pool.html">Pool</a>]</td>
+<td><div class="info">
+<p><code class="code">size p</code> is the size of the current tile_pool</p>
+
+</div>
+</td></tr>
+<tr><td><a href="Hand.html#VALspend_word">spend_word</a> [<a href="Hand.html">Hand</a>]</td>
+<td></td></tr>
+<tr><td align="left"><div>T</div></td></tr>
+<tr><td><a href="Hand.html#VALto_string">to_string</a> [<a href="Hand.html">Hand</a>]</td>
+<td><div class="info">
+<p><code class="code">to_string hand</code> is a string representation of a hand.</p>
+
+</div>
+</td></tr>
+<tr><td><a href="Score.html#VALto_string">to_string</a> [<a href="Score.html">Score</a>]</td>
+<td><div class="info">
+<p><code class="code">to_string t</code> is a string representation of <code class="code">t</code></p>
+
+</div>
+</td></tr>
+<tr><td><a href="Board.html#VALto_string">to_string</a> [<a href="Board.html">Board</a>]</td>
+<td><div class="info">
+<p><code class="code">to_string</code> is a string represntation of the board.</p>
+
+</div>
+</td></tr>
+<tr><td align="left"><div>U</div></td></tr>
+<tr><td><a href="Score.html#VALupdate_score">update_score</a> [<a href="Score.html">Score</a>]</td>
+<td><div class="info">
+<p><code class="code">update_score score words</code> is the new score with the appropriate
+    amount of points added to a player's original <code class="code">score</code> after they
+    play <code class="code">words</code> on the board .</p>
+
+</div>
+</td></tr>
+</table>
+</body>
+</html>

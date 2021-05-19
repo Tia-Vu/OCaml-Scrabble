@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Pool.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Board" rel="Chapter" href="Board.html">
+<link title="Display" rel="Chapter" href="Display.html">
+<link title="Game" rel="Chapter" href="Game.html">
+<link title="Score" rel="Chapter" href="Score.html">
+<link title="Validation" rel="Chapter" href="Validation.html">
+<link title="Pool" rel="Chapter" href="Pool.html">
+<link title="Hand" rel="Chapter" href="Hand.html"><title>Hand</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Pool.html" title="Pool">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;</div>
+<h1>Module <a href="type_Hand.html">Hand</a></h1>
+
+<pre><span id="MODULEHand"><span class="keyword">module</span> Hand</span>: <code class="code">sig</code> <a href="Hand.html">..</a> <code class="code">end</code></pre><div class="info module top">
+<div class="info-desc">
+<p>Representation of a player's hand in the game</p>
+</div>
+</div>
+<hr width="100%">
+
+<pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> = <code class="type">char list</code> </pre>
+<div class="info ">
+<div class="info-desc">
+<p>The abstract type of values represnting hand</p>
+</div>
+</div>
+
+<p><code class="code">empty_hand ()</code> is an empty hand.</p>
+
+<pre><span id="VALempty_hand"><span class="keyword">val</span> empty_hand</span> : <code class="type">unit -> <a href="Hand.html#TYPEt">t</a></code></pre><p><code class="code">size hand</code> is the size of the hand.</p>
+
+<pre><span id="VALsize"><span class="keyword">val</span> size</span> : <code class="type"><a href="Hand.html#TYPEt">t</a> -> int</code></pre><p><code class="code">draw_nletters pool n hand</code> is a hand created from drawing <code class="code">n</code>
+    letters from <code class="code">pool</code> to hand. If there are less than <code class="code">n</code> letters in
+    <code class="code">pool</code>, draw as much as possible.</p>
+
+<p>Requires: n &gt;= 0</p>
+
+<pre><span id="VALdraw_nletters"><span class="keyword">val</span> draw_nletters</span> : <code class="type"><a href="Pool.html#TYPEt">Pool.t</a> -> int -> <a href="Hand.html#TYPEt">t</a> -> <a href="Hand.html#TYPEt">t</a></code></pre><p><code class="code">has_word word hand</code> is <code class="code">true</code> if and only if <code class="code">hand</code> has the letters
+    to make <code class="code">word</code>.</p>
+
+<pre><span id="VALhas_word"><span class="keyword">val</span> has_word</span> : <code class="type">char list -> <a href="Hand.html#TYPEt">t</a> -> bool</code></pre>
+<pre><span id="EXCEPTIONInsufficentTiles"><span class="keyword">exception</span> InsufficentTiles</span></pre>
+<div class="info ">
+<div class="info-desc">
+<p>The exception <code class="code">InsufficientTiles</code> is raised when there are not
+    enough tiles in the hand to play a given move.</p>
+</div>
+</div>
+<p><code class="code">spend_word word hand</code> is the new hand after spending the
+    appropriate letter tiles from <code class="code">hand</code> to create <code class="code">word</code>.</p>
+
+<p>Raises: InsufficientTiles</p>
+
+<pre><span id="VALspend_word"><span class="keyword">val</span> spend_word</span> : <code class="type">char list -> <a href="Hand.html#TYPEt">t</a> -> <a href="Hand.html#TYPEt">t</a></code></pre>
+<pre><span id="VALfill_hand"><span class="keyword">val</span> fill_hand</span> : <code class="type"><a href="Pool.html#TYPEt">Pool.t</a> -> int -> <a href="Hand.html#TYPEt">t</a> -> <a href="Hand.html#TYPEt">t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">fill_hand pool max hand</code> is the hand created from drawing letters
+   from <code class="code">pool</code> and adds to the old <code class="code">hand</code> until the <code class="code">max</code> number of
+   tiles in the hand is reached.</p>
+</div>
+</div>
+
+<pre><span id="VALto_string"><span class="keyword">val</span> to_string</span> : <code class="type"><a href="Hand.html#TYPEt">t</a> -> string</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">to_string hand</code> is a string representation of a hand.</p>
+</div>
+</div>
+</body></html>

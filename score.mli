@@ -3,11 +3,13 @@
 
 type t
 
-(** [update_score] takes an old state of score and a list of new words
-    that are formed, and adds an amount of points to the score.*)
+(** [update_score score words] is the new score with the appropriate
+    amount of points added to a player's original [score] after they
+    play [words] on the board .*)
 val update_score : t -> string list -> t
-(**[create] creates a new score state*)
+
+(**[create ()] is a new, initial score.*)
 val create : unit -> t
 
-(**[to_string t] converts a score to string*)
+(**[to_string t] is a string representation of [t]*)
 val to_string : t -> string
