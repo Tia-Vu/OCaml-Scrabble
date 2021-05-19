@@ -16,6 +16,13 @@ let print_separator () =
 
 let print_try_again () = print_string "\nPlease try again.\n"
 
+let print_round_start () = print_string "\n A new round has begun.\n"
+
+let print_round_end () = print_string "\n The round has ended. \n"
+
+let print_player_turn n =
+  print_string ("\n Player " ^ string_of_int n ^ "'s turn!")
+
 let print_exc_board_illegal_move s =
   print_endline ("\nThis is an illegal move. " ^ s)
 
