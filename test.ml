@@ -4,7 +4,18 @@ open Hand
 open Pool
 
 (********************************************************************
+
   Test Plan
+
+  We mainly use blackbox testing as evaluating the actual edge cases in
+  the gameplay is important - not causing errors is not enough. After we
+  write such tests, we evaluate the coverage of the tests using bisect,
+  and if the coverage is significantly low, we add more glassbox tesing.
+
+  - Board: We test all the functions in .mli in using unite tests except
+  for the to_string function, which will be tested by playtesting. This
+  is because to_string is mainly about the aesthetics, and it may change
+  frequently.
 
   ********************************************************************)
 
