@@ -15,21 +15,6 @@ let rec draw_nletters pool n hand =
         let letter = Pool.draw_letter pool in
         draw_nletters pool (n - 1) (letter :: hand)
 
-(** to_letter_lst [word] returns [word] converted into a list of the
-    letters in the list in the same order. Ex. to_letter_lst "hello"
-    returns ['h';'e';'l';'l';'o']*)
-let to_letter_lst word =
-  (*REMARK: The same function is in board*)
-  let rec to_letter_lst_h word letter_lst =
-    match word with
-    | "" -> List.rev letter_lst
-    | _ ->
-        to_letter_lst_h
-          (String.sub word 1 (String.length word - 1))
-          (word.[0] :: letter_lst)
-  in
-  to_letter_lst_h word []
-
 (** [count_letter lc l] increments the count of [l] in [lc] by one, if
     [l] is a key in [lc]. Else, adds [(l,1)] to [lc]. *)
 let add_letter_count lcount letter =
