@@ -17,13 +17,11 @@ open Pool
   easily change over time, and the tests become outdated every time the
   standard changes.
 
-  - Board: The testing plan for this module fits the general description
-  above.
-
-  - Hand, pool: pool has mutable structure, where the tiles in it are
-  removed when [Hand.draw_nletters] is called. Thus in this module we
-  draw various number of tiles (0~100 for pool and 0~10 for hand) and
-  see if the size of the pool/hand reduced as much as we expected.
+  In this module there is a randomized testing for hand and pool module.
+  pool has mutable structure, where the tiles in it are removed when
+  [Hand.draw_nletters] is called. Thus in this module we draw various
+  number of tiles (0~100 for pool and 0~10 for hand) and see if the size
+  of the pool/hand reduced as much as we expected.
 
   ********************************************************************)
 
