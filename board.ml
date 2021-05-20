@@ -183,8 +183,10 @@ let tiles_occupied t w start_coord dir =
 (**Helper function to check if tile placement will be on the board*)
 let off_board t word (row, col) direction =
   match direction with
-  | true -> col + String.length word > t.n || row < 0
-  | false -> row + String.length word > t.n || col < 0
+  | true ->
+      col + String.length word > t.n || row >= t.n || row < 0 || col < 0
+  | false ->
+      row + String.length word > t.n || col >= t.n || col < 0 || row < 0
 
 (**[tiles_near_current_tile] gives whether the current tile at
    [(row,col)] has any tiles adjacent to it Precondition: [(row, col)]
