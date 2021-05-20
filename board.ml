@@ -197,7 +197,7 @@ let tiles_near_current_tile t (row, col) =
   || adjacent.up.letter <> '.'
   || adjacent.down.letter <> '.'
 
-(**[tiles_near_current_tiles] t idx (row,col) dir] gives whether there
+(**[tiles_near_current_tiles] t idx (row,col) dir gives whether there
    are tiles adjacent to the tiles starting at the tile at [(row,col)]
    and going [idx] in the direction [dir] (horizontal if true and
    vertical if false)
