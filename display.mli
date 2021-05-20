@@ -4,6 +4,7 @@
 open Board
 open Score
 open Hand
+open Pool
 
 (** [print_board board] pretty prints [board] on the command prompt.*)
 val print_board : Board.t -> unit
@@ -55,3 +56,5 @@ val print_intro : unit -> unit
 
 (** [print_end ()] declares the end of the game on the command prompt.*)
 val print_end : unit -> unit
+
+val print_pool : Pool.t -> unit

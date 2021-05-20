@@ -49,3 +49,6 @@ let print_move_instructions () =
 let print_intro () = print_endline "\nThis is OCaml Scrabble!\n"
 
 let print_end () = print_endline "\nThank you for playing!\n"
+
+let print_pool p =
+  print_endline ("Letter Pool: " ^ Pool.to_string p ^ "tiles left.")

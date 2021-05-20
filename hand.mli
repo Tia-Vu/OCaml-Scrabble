@@ -42,4 +42,5 @@ val spend_word : char list -> t -> t
 val fill_hand : Pool.t -> int -> t -> t
 
 (** [to_string hand] is a string representation of a hand.*)
+
 val to_string : t -> string
