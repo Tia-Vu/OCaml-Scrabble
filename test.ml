@@ -149,6 +149,53 @@ let board_tests =
       empty_board "ant" (10, 25) true "Word goes off board.";
     board_illegal_place_word_test "Word places beyond col vertically"
       empty_board "ant" (10, 25) false "Word goes off board.";
+    board_illegal_place_word_test
+      "Place horizontal word over vertical word."
+      (place_word empty_board "ant" (10, 10) false)
+      "sample" (10, 10) true "Tile tries to place on existing tiles.";
+    board_illegal_place_word_test
+      "Place vertical word over vertical word."
+      (place_word empty_board "ant" (10, 10) false)
+      "sample" (10, 10) false "Tile tries to place on existing tiles.";
+    board_illegal_place_word_test
+      "Place horizontal word over horizontal word."
+      (place_word empty_board "ant" (10, 10) true)
+      "sample" (10, 10) true "Tile tries to place on existing tiles.";
+    board_illegal_place_word_test
+      "Place vertical word over horizontal word."
+      (place_word empty_board "ant" (10, 10) true)
+      "sample" (10, 10) false "Tile tries to place on existing tiles.";
+    board_illegal_place_word_test
+      "Place horizontal word not near any existing tiles."
+      (place_word empty_board "ant" (10, 10) true)
+      "sample" (16, 16) true "Not near any existing tiles.";
+    board_illegal_place_word_test
+      "Place vertical word not near any existing tiles."
+      (place_word empty_board "ant" (10, 10) true)
+      "sample" (16, 16) false "Not near any existing tiles.";
+    board_illegal_place_word_test "Start with a nonsensical word."
+      empty_board "ecaml" (10, 10) true
+      "Word \"ecaml\" is not in the dictionary.";
+    board_illegal_place_word_test
+      "Placeing a horizontal word on an adjacent row creates several \
+       nonsensical words.CamlinternalLazy"
+      (place_word empty_board "pineapple" (10, 10) true)
+      "apple" (11, 10) true "Word \"ip\" is not in the dictionary.";
+    board_illegal_place_word_test
+      "Placeing a vertical word on an adjacent col creates several \
+       nonsensical words."
+      (place_word empty_board "pineapple" (10, 10) false)
+      "apple" (10, 11) false "Word \"ip\" is not in the dictionary.";
+    board_illegal_place_word_test
+      "Extend a horizontal word into a nonsensical word."
+      (place_word empty_board "pineapple" (10, 10) true)
+      "cpineapple" (10, 9) true
+      "Word \"cpineapple\" is not in the dictionary.";
+    board_illegal_place_word_test
+      "Extend a vertical word into a nonsensical word."
+      (place_word empty_board "pineapple" (10, 10) false)
+      "cpineapple" (9, 10) false
+      "Word \"cpineapple\" is not in the dictionary.";
     (* Replaced by play tests board_to_string_test "Empty 1 x 1 board"
        (Board.empty_board dict 1) "."; board_to_string_test "Empty 2 x 2
        board" (Board.empty_board dict 2) ". .\n. .";
