@@ -15,6 +15,9 @@ open Pool
 (** [pp_string s] pretty-prints string [s]. *)
 let pp_string s = "\"" ^ s ^ "\""
 
+(** [pp_char c] pretty-prints char [c]. *)
+let pp_char c = "\"" ^ Char.escaped c ^ "\""
+
 (** [pp_list pp_elt lst] pretty-prints list [lst], using [pp_elt] to
     pretty-print each element of [lst].
 
@@ -48,6 +51,15 @@ let cmp_set_like_lists lst1 lst2 =
   List.length lst1 = List.length uniq1
   && List.length lst2 = List.length uniq2
   && uniq1 = uniq2
+
+(** [cmp_unordered_lists lst1 lst2] compares two lists to see whether
+    they are equivalent lists, irrelevant of their orders.*)
+let cmp_unordered_lists compare lst1 lst2 =
+  let sorted1 = List.sort compare lst1 in
+  let sorted2 = List.sort compare lst2 in
+  List.length lst1 = List.length sorted1
+  && List.length lst2 = List.length sorted2
+  && sorted1 = sorted2
 
 (* DEPRECATED: Board_to_string is tested through play test.
    [board_to_string name input expected_output] constructs an OUnit test
@@ -101,7 +113,24 @@ let board_get_created_words_test
   "b_get_created_words_test: " ^ name >:: fun _ ->
   assert_equal expected
     (get_created_words board word coord dir)
-    ~cmp:cmp_set_like_lists ~printer:(pp_list pp_string)
+    ~cmp:(cmp_unordered_lists String.compare)
+    ~printer:(pp_list pp_string)
+
+(** [board_requires_letters_test name board word coord dir expected]
+    constructs an OUnit test named [name] that asserts the quality of
+    [Board.requires_letters]. *)
+let board_requires_letters_test
+    (name : string)
+    (board : Board.t)
+    (word : string)
+    (coord : int * int)
+    (dir : bool)
+    (expected : char list) : test =
+  "b_requires_letters_test: " ^ name >:: fun _ ->
+  assert_equal expected
+    (Board.requires_letters board word coord dir)
+    ~cmp:(cmp_unordered_lists Char.compare)
+    ~printer:(pp_list pp_char)
 
 (** [draw_nletters_pool_size_test name n] constructs an OUnit test named
     [name] that asserts the quality of [Pool.draw_nletters] with the
@@ -268,6 +297,46 @@ let board_tests =
       {|extend horizontal word (input only the new suffix)|}
       (place_word empty_board "pine" (10, 10) true)
       "apple" (10, 14) true [ "pineapple" ];
+    (*******************************)
+    board_requires_letters_test "Place a horizontal word on empty board"
+      empty_board "apple" (10, 10) true
+      [ 'a'; 'p'; 'p'; 'l'; 'e' ];
+    board_requires_letters_test "Place a vertical word on empty board"
+      empty_board "apple" (10, 10) false
+      [ 'a'; 'p'; 'p'; 'l'; 'e' ];
+    board_requires_letters_test
+      {|horizontal "ba" below horizontal "apple"|}
+      (place_word empty_board "apple" (10, 10) true)
+      "ba" (11, 10) true [ 'b'; 'a' ];
+    board_requires_letters_test
+      {|vertical "ba" on the right of vertical "apple"|}
+      (place_word empty_board "apple" (10, 10) false)
+      "ba" (10, 11) false [ 'b'; 'a' ];
+    board_requires_letters_test
+      {|extend horizontal word (input only the new prefix)|}
+      (place_word empty_board "apple" (10, 10) true)
+      "pine" (10, 6) true [ 'p'; 'i'; 'n'; 'e' ];
+    board_requires_letters_test
+      {|extend horizontal word (input whole word)|}
+      (place_word empty_board "apple" (10, 10) true)
+      "pineapple" (10, 6) true [ 'p'; 'i'; 'n'; 'e' ];
+    board_requires_letters_test
+      {|extend vertical word (input only the new prefix)|}
+      (place_word empty_board "apple" (10, 10) false)
+      "pine" (6, 10) false [ 'p'; 'i'; 'n'; 'e' ];
+    board_requires_letters_test
+      {|extend vertical word (input whole word)|}
+      (place_word empty_board "apple" (10, 10) false)
+      "pineapple" (6, 10) false [ 'p'; 'i'; 'n'; 'e' ];
+    board_requires_letters_test
+      {|extend horizontal word (input only the new prefix)|}
+      (place_word empty_board "do" (10, 10) true)
+      "a" (10, 9) true [ 'a' ];
+    board_requires_letters_test
+      {|extend horizontal word (input only the new suffix)|}
+      (place_word empty_board "pine" (10, 10) true)
+      "apple" (10, 14) true
+      [ 'a'; 'p'; 'p'; 'l'; 'e' ];
     (* Replaced by play tests board_to_string_test "Empty 1 x 1 board"
        (Board.empty_board dict 1) "."; board_to_string_test "Empty 2 x 2
        board" (Board.empty_board dict 2) ". .\n. .";
@@ -291,6 +360,10 @@ let hand_tests =
       [ 'a'; 'p'; 'p'; 'l'; 'e' ]
       [ 'p'; 'p'; 'l'; 'e'; 'd'; 'a' ]
       true;
+    has_word_test "apple not in []" [ 'a'; 'p'; 'p'; 'l'; 'e' ] [] false;
+    has_word_test "apple not in [a;p;l;e]"
+      [ 'a'; 'p'; 'p'; 'l'; 'e' ]
+      [ 'a'; 'p'; 'l'; 'e' ] false;
   ]
 
 let draw_nletters_psize_test =
