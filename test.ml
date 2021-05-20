@@ -247,19 +247,27 @@ let board_tests =
     board_get_created_words_test
       {|extend horizontal word (input only the new prefix)|}
       (place_word empty_board "apple" (10, 10) true)
-      "pine" (6, 10) true [ "pineapple" ];
+      "pine" (10, 6) true [ "pineapple" ];
     board_get_created_words_test
       {|extend horizontal word (input whole word)|}
       (place_word empty_board "apple" (10, 10) true)
-      "pineapple" (6, 10) true [ "pineapple" ];
+      "pineapple" (10, 6) true [ "pineapple" ];
     board_get_created_words_test
       {|extend vertical word (input only the new prefix)|}
       (place_word empty_board "apple" (10, 10) false)
-      "pine" (10, 6) false [ "pineapple" ];
+      "pine" (6, 10) false [ "pineapple" ];
     board_get_created_words_test
       {|extend vertical word (input whole word)|}
       (place_word empty_board "apple" (10, 10) false)
-      "pineapple" (10, 6) false [ "pineapple" ];
+      "pineapple" (6, 10) false [ "pineapple" ];
+    board_get_created_words_test
+      {|extend horizontal word (input only the new prefix)|}
+      (place_word empty_board "do" (10, 10) true)
+      "a" (10, 9) true [ "ado" ];
+    board_get_created_words_test
+      {|extend horizontal word (input only the new suffix)|}
+      (place_word empty_board "pine" (10, 10) true)
+      "apple" (10, 14) true [ "pineapple" ];
     (* Replaced by play tests board_to_string_test "Empty 1 x 1 board"
        (Board.empty_board dict 1) "."; board_to_string_test "Empty 2 x 2
        board" (Board.empty_board dict 2) ". .\n. .";
@@ -278,6 +286,10 @@ let hand_tests =
     has_word_test "apple in [a;p;p;l;e]"
       [ 'a'; 'p'; 'p'; 'l'; 'e' ]
       [ 'a'; 'p'; 'p'; 'l'; 'e' ]
+      true;
+    has_word_test "apple in [p;p;l;e;d;a]"
+      [ 'a'; 'p'; 'p'; 'l'; 'e' ]
+      [ 'p'; 'p'; 'l'; 'e'; 'd'; 'a' ]
       true;
   ]
 
