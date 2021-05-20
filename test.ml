@@ -16,7 +16,9 @@ open Pool
 let pp_string s = "\"" ^ s ^ "\""
 
 (** [pp_list pp_elt lst] pretty-prints list [lst], using [pp_elt] to
-    pretty-print each element of [lst]. *)
+    pretty-print each element of [lst].
+
+    Reference: Brought from CS3110 Spring Assignment a2*)
 let pp_list pp_elt lst =
   let pp_elts lst =
     let rec loop n acc = function
@@ -32,6 +34,20 @@ let pp_list pp_elt lst =
 
 let pp_board board =
   board |> Board.to_string |> fun x -> "\n-\n" ^ x ^ "\n-\n"
+
+(** [cmp_set_like_lists lst1 lst2] compares two lists to see whether
+    they are equivalent set-like lists. That means checking two things.
+    First, they must both be {i set-like}, meaning that they do not
+    contain any duplicates. Second, they must contain the same elements,
+    though not necessarily in the same order.
+
+    Reference: Brought from CS3110 Spring Assignment a2*)
+let cmp_set_like_lists lst1 lst2 =
+  let uniq1 = List.sort_uniq compare lst1 in
+  let uniq2 = List.sort_uniq compare lst2 in
+  List.length lst1 = List.length uniq1
+  && List.length lst2 = List.length uniq2
+  && uniq1 = uniq2
 
 (* DEPRECATED: Board_to_string is tested through play test.
    [board_to_string name input expected_output] constructs an OUnit test
@@ -57,6 +73,10 @@ let board_place_word_test
     (place_word board word coord dir)
     ~printer:pp_board
 
+(** [board_illegal_place_word_test name board word coord dir
+    expected_error_msg] constructs an OUnit test named [name] that
+    asserts that [Board.place_word] raises [Board.IllegalMove] with
+    string [expected_error_msg]. *)
 let board_illegal_place_word_test
     (name : string)
     (board : Board.t)
@@ -67,6 +87,21 @@ let board_illegal_place_word_test
   "b_illegal_place_word_test: " ^ name >:: fun _ ->
   assert_raises (Board.IllegalMove expected_error_msg) (fun () ->
       place_word board word coord dir)
+
+(** [board_get_created_words_test name board word coord dir expected]
+    constructs an OUnit test named [name] that asserts the quality of
+    [Board.get_created_words]. *)
+let board_get_created_words_test
+    (name : string)
+    (board : Board.t)
+    (word : string)
+    (coord : int * int)
+    (dir : bool)
+    (expected : string list) : test =
+  "b_get_created_words_test: " ^ name >:: fun _ ->
+  assert_equal expected
+    (get_created_words board word coord dir)
+    ~cmp:cmp_set_like_lists ~printer:(pp_list pp_string)
 
 (** [draw_nletters_pool_size_test name n] constructs an OUnit test named
     [name] that asserts the quality of [Pool.draw_nletters] with the
@@ -196,6 +231,35 @@ let board_tests =
       (place_word empty_board "pineapple" (10, 10) false)
       "cpineapple" (9, 10) false
       "Word \"cpineapple\" is not in the dictionary.";
+    board_get_created_words_test
+      "Place a horizontal word on empty board" empty_board "apple"
+      (10, 10) true [ "apple" ];
+    board_get_created_words_test "Place a vertical word on empty board"
+      empty_board "apple" (10, 10) false [ "apple" ];
+    board_get_created_words_test
+      {|horizontal "ba" below horizontal "apple"|}
+      (place_word empty_board "apple" (10, 10) true)
+      "ba" (11, 10) true [ "ab"; "ba"; "pa" ];
+    board_get_created_words_test
+      {|vertical "ba" on the right of vertical "apple"|}
+      (place_word empty_board "apple" (10, 10) false)
+      "ba" (10, 11) false [ "ab"; "ba"; "pa" ];
+    board_get_created_words_test
+      {|extend horizontal word (input only the new prefix)|}
+      (place_word empty_board "apple" (10, 10) true)
+      "pine" (6, 10) true [ "pineapple" ];
+    board_get_created_words_test
+      {|extend horizontal word (input whole word)|}
+      (place_word empty_board "apple" (10, 10) true)
+      "pineapple" (6, 10) true [ "pineapple" ];
+    board_get_created_words_test
+      {|extend vertical word (input only the new prefix)|}
+      (place_word empty_board "apple" (10, 10) false)
+      "pine" (10, 6) false [ "pineapple" ];
+    board_get_created_words_test
+      {|extend vertical word (input whole word)|}
+      (place_word empty_board "apple" (10, 10) false)
+      "pineapple" (10, 6) false [ "pineapple" ];
     (* Replaced by play tests board_to_string_test "Empty 1 x 1 board"
        (Board.empty_board dict 1) "."; board_to_string_test "Empty 2 x 2
        board" (Board.empty_board dict 2) ". .\n. .";
