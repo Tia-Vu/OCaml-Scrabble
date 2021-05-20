@@ -297,7 +297,6 @@ let board_tests =
       {|extend horizontal word (input only the new suffix)|}
       (place_word empty_board "pine" (10, 10) true)
       "apple" (10, 14) true [ "pineapple" ];
-    (*******************************)
     board_requires_letters_test "Place a horizontal word on empty board"
       empty_board "apple" (10, 10) true
       [ 'a'; 'p'; 'p'; 'l'; 'e' ];
