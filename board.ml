@@ -39,30 +39,54 @@ let create_tile l x y = { letter = l; coord = (x, y) }
 
 let init_tile () = create_tile '.' (-1) (-1)
 
-let init_itile b = { bonus = b }
-
 let init_tile_board n =
   let init_row n i = Array.make n (init_tile ()) in
   Array.init n (init_row n)
 
+(*Bonus tile board*)
+
 (*D is for doubling a tile, T is for tripling a tile, DW is Doubling the
   word, TW is tripling the word value, BW is a bonus word in the
-  dictionary*)
+  dictionary, and N is for no bonus*)
+let init_itile b = { bonus = b }
+
+let get_itile (row, col) info_board n =
+  if row < 0 || col < 0 || row >= n || col >= n then init_itile "N"
+  else info_board.(row).(col)
+
+let itile_occupied itle = itle.bonus <> "N"
+
+let assign_bonus_tle bonus (row, col) info_board =
+  info_board.(row).(col) <- { bonus }
+
+let make_rand_coord n = (Random.int n, Random.int n)
 
 (*Generates bonus tile locations*)
-let generate_bonus_tiles n n_tl =
+let generate_bonus_tiles n n_tle bonus info_board =
   let _ = Random.self_init in
-  let rec generate_bonus_tiles_h n_tl tl_lst =
-    if n_tl > 0 then generate_bonus_tiles_h (n_tl - 1) tl_lst
-    else tl_lst
+  let rec generate_bonus_tiles_h n_tle =
+    let rand_coord = make_rand_coord n in
+    let rand_tle = get_itile rand_coord info_board n in
+    if n_tle <= 0 then info_board
+    else if itile_occupied rand_tle then generate_bonus_tiles_h n_tle
+    else (
+      assign_bonus_tle bonus rand_coord info_board;
+      generate_bonus_tiles_h (n_tle - 1) )
   in
-  generate_bonus_tiles_h n_tl []
-
-let assign_bonus_tiles info_board = failwith "TODO"
+  generate_bonus_tiles_h n_tle
 
 let init_info_board n =
   let init_row n i = Array.make n (init_itile "N") in
-  Array.init n (init_row n)
+  let init_board = Array.init n (init_row n) in
+  let d = n * n * (8 / 225) in
+  let t = n * n * (16 / 225) in
+  let dw = n * n * (24 / 225) in
+  let tw = n * n * (12 / 225) in
+  init_board
+  |> generate_bonus_tiles n d "D"
+  |> generate_bonus_tiles n t "T"
+  |> generate_bonus_tiles n dw "DW"
+  |> generate_bonus_tiles n tw "TW"
 
 let empty_board json_dict n =
   {
@@ -75,8 +99,7 @@ let empty_board json_dict n =
 
 (*TODO: Make dictionary for board*)
 
-(*get_tile [coord] returns the tile at [coord] Requires: [coord] is in
-  the form [row][col]*)
+(*get_tile [(row, col)] returns the tile at [(row, col)]*)
 let get_tile (row, col) t =
   if row < 0 || col < 0 || row >= t.n || col >= t.n then init_tile ()
   else t.tile_board.(row).(col)
@@ -250,11 +273,11 @@ let word_start_ver t start_coord =
   in
   min x0 (!x + 1)
 
-(** [vertical_word_of t (x,y)] gives the maximum vertical superset word
-    that consists of the letter at [(x,y)] on [t].
+(** [vertical_word_of t (row,col)] gives the maximum vertical superset
+    word that consists of the letter at [(row,col)] on [t].
 
-    Example: If [(x,y)] is at 'a' for ". . . p i n e a p p l e . ." , it
-    returns "pineapple" *)
+    Example: If [(row,col)] is at 'a' for ". . . p i n e a p p l e . ."
+    , it returns "pineapple" *)
 
 let vertical_word_of t start_coord =
   let word = ref "" in
@@ -282,11 +305,11 @@ let word_start_hor t start_coord =
   in
   min y0 (!y + 1)
 
-(** [horizontal_word_of t (x,y)] gives the maximum horizontal superset
-    word that consists of the letter at [(x,y)] on [t].
+(** [horizontal_word_of t (row,col)] gives the maximum horizontal
+    superset word that consists of the letter at [(row,col)] on [t].
 
-    Example: If [(x,y)] is at 'a' for ". . . p i n e a p p l e . ." , it
-    returns "pineapple" *)
+    Example: If [(row,col)] is at 'a' for ". . . p i n e a p p l e . ."
+    , it returns "pineapple" *)
 
 let horizontal_word_of t start_coord =
   let word = ref "" in
@@ -338,8 +361,8 @@ let copy_board t =
     info_board = copy_mat t.info_board;
   }
 
-(** [place_word_no_validation t w (x,y) dir] gives a new board with the
-    word placed on it. No validation check is done.*)
+(** [place_word_no_validation t w (row,col) dir] gives a new board with
+    the word placed on it. No validation check is done.*)
 let place_word_no_validation t word start_coord dir =
   let t = copy_board t in
   match dir with
