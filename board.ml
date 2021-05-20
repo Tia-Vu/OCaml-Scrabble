@@ -41,13 +41,15 @@ let init_tile () = create_tile '.' (-1) (-1)
 
 let init_itile b = { bonus = b }
 
-let init_tile_board n =
-  let init_row n i = Array.make n (init_tile ()) in
-  Array.init n (init_row n)
+let init_tile_board n = Array.make_matrix n n (init_tile ())
 
-let init_info_board n =
-  let init_row n i = Array.make n (init_itile 0) in
-  Array.init n (init_row n)
+(* DEPRECATED: let init_row n i = Array.make n (init_tile ()) in
+   Array.init n (init_row n)*)
+
+let init_info_board n = Array.make_matrix n n (init_itile 0)
+
+(* DEPRECATED: let init_row n i = Array.make n (init_itile 0) in
+   Array.init n (init_row n) *)
 
 let empty_board json_dict n =
   {
@@ -212,10 +214,15 @@ let rec tiles_near_current_tiles t idx (row, col) dir =
   match idx with
   | 0 -> false
   | _ ->
-      if tiles_near_current_tile t (row, col) then true
-      else if dir then
+      tiles_near_current_tile t (row, col)
+      ||
+      if dir then
         tiles_near_current_tiles t (idx - 1) (row, col + 1) dir
       else tiles_near_current_tiles t (idx - 1) (row + 1, col) dir
+
+(*if tiles_near_current_tile t (row, col) then true else if dir then
+  tiles_near_current_tiles t (idx - 1) (row, col + 1) dir else
+  tiles_near_current_tiles t (idx - 1) (row + 1, col) dir *)
 
 (*[is_in_bound t coord] checks if [coord] is inbound for [t]*)
 let is_in_bound t coord =
@@ -309,7 +316,7 @@ let rec place_word_ver letter_lst curr_coord tile_board =
       place_tile h curr_coord tile_board;
       place_word_ver t next_coord tile_board
 
-(** [copy_mat mat] gives a new copy of [mat], a 2d array. *)
+(** [copy_mat mat] gives a deep copy of [mat], a 2d array. *)
 let copy_mat mat =
   let n = Array.length mat in
   let copy_ith i = Array.copy mat.(i) in
