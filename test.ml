@@ -4,7 +4,12 @@ open Hand
 open Pool
 
 (********************************************************************
-   Here are some helper functions for your testing of set-like lists. 
+  Test Plan
+
+  ********************************************************************)
+
+(********************************************************************
+   Helper functions for testing. 
  ********************************************************************)
 
 (** [pp_string s] pretty-prints string [s]. *)
@@ -28,9 +33,10 @@ let pp_list pp_elt lst =
 let pp_board board =
   board |> Board.to_string |> fun x -> "\n-\n" ^ x ^ "\n-\n"
 
-(** [board_to_string name input expected_output] constructs an OUnit
-    test named [name] that asserts the quality of [Board.to_str] with
-    [index input]. *)
+(* DEPRECATED: Board_to_string is tested through play test.
+   [board_to_string name input expected_output] constructs an OUnit test
+   named [name] that asserts the quality of [Board.to_str] with [index
+   input]. *)
 let board_to_string_test
     (name : string)
     (input : Board.t)
@@ -50,6 +56,17 @@ let board_place_word_test
   assert_equal expected_output
     (place_word board word coord dir)
     ~printer:pp_board
+
+let board_illegal_place_word_test
+    (name : string)
+    (board : Board.t)
+    (word : string)
+    (coord : int * int)
+    (dir : bool)
+    (expected_error_msg : string) : test =
+  "b_illegal_place_word_test: " ^ name >:: fun _ ->
+  assert_raises (Board.IllegalMove expected_error_msg) (fun () ->
+      place_word board word coord dir)
 
 (** [draw_nletters_pool_size_test name n] constructs an OUnit test named
     [name] that asserts the quality of [Pool.draw_nletters] with the
@@ -84,7 +101,7 @@ let draw_nletters_hand_size_test (name : string) (n : int) : test =
 let rec create_many_draw_nletters_hsize_test test_list = function
   | -1 -> test_list
   | m ->
-      create_many_draw_nletters_psize_test
+      create_many_draw_nletters_hsize_test
         ( draw_nletters_hand_size_test ("n = " ^ string_of_int m) m
         :: test_list )
         (m - 1)
@@ -108,24 +125,41 @@ let has_word_test
 
 let dict = Yojson.Basic.from_file "dictionary.json"
 
+let empty_board = Board.empty_board dict 25
+
 let board_tests =
-  (*Turned off - mostly replaced by playtest*)
   [
-    board_to_string_test "Empty 1 x 1 board"
-      (Board.empty_board dict 1)
-      ".";
-    board_to_string_test "Empty 2 x 2 board"
-      (Board.empty_board dict 2)
-      ". .\n. .";
-    board_to_string_test "Place 'c' horizontally on 4 x 4 board"
-      (place_word (Board.empty_board dict 4) "c" (0, 0) true)
-      "c . . .\n. . . .\n. . . .\n. . . .";
-    board_to_string_test "Place 'car' horizontally on 4 x 4 board"
-      (place_word (Board.empty_board dict 4) "car" (0, 0) true)
-      "c a r .\n. . . .\n. . . .\n. . . .";
-    board_to_string_test "Place 'car' vertically on 4 x 4 board"
-      (place_word (Board.empty_board dict 4) "car" (0, 0) false)
-      "c . . .\na . . .\nr . . .\n. . . .";
+    board_illegal_place_word_test
+      "Word places on negative row horizontally" empty_board "ant"
+      (-1, 10) true "Word goes off board.";
+    board_illegal_place_word_test
+      "Word places on negative row vertically" empty_board "ant"
+      (-1, 10) false "Word goes off board.";
+    board_illegal_place_word_test
+      "Word places on negative col horiontally" empty_board "ant"
+      (10, -1) true "Word goes off board.";
+    board_illegal_place_word_test
+      "Word places on negative col vertically" empty_board "ant"
+      (10, -1) false "Word goes off board.";
+    board_illegal_place_word_test "Word places beyond row horizontally"
+      empty_board "ant" (25, 10) true "Word goes off board.";
+    board_illegal_place_word_test "Word places beyond row vertically"
+      empty_board "ant" (25, 10) false "Word goes off board.";
+    board_illegal_place_word_test "Word places beyond col horiontally"
+      empty_board "ant" (10, 25) true "Word goes off board.";
+    board_illegal_place_word_test "Word places beyond col vertically"
+      empty_board "ant" (10, 25) false "Word goes off board.";
+    (* Replaced by play tests board_to_string_test "Empty 1 x 1 board"
+       (Board.empty_board dict 1) "."; board_to_string_test "Empty 2 x 2
+       board" (Board.empty_board dict 2) ". .\n. .";
+       board_to_string_test "Place 'c' horizontally on 4 x 4 board"
+       (place_word (Board.empty_board dict 4) "c" (0, 0) true) "c . .
+       .\n. . . .\n. . . .\n. . . ."; board_to_string_test "Place 'car'
+       horizontally on 4 x 4 board" (place_word (Board.empty_board dict
+       4) "car" (0, 0) true) "c a r .\n. . . .\n. . . .\n. . . .";
+       board_to_string_test "Place 'car' vertically on 4 x 4 board"
+       (place_word (Board.empty_board dict 4) "car" (0, 0) false) "c . .
+       .\na . . .\nr . . .\n. . . ."; *)
   ]
 
 let hand_tests =
@@ -148,6 +182,7 @@ let suite =
   "test suite for Project"
   >::: List.flatten
          [
+           board_tests;
            hand_tests;
            draw_nletters_psize_test;
            draw_nletters_hsize_test;
