@@ -132,7 +132,9 @@ let word_in_dict dict word = List.mem word dict
 (** Helper function to raise Error if word is not in dictionary*)
 let check_in_dict dict word =
   if String.length word = 1 || word_in_dict dict word then ()
-  else raise (IllegalMove ("No word: " ^ word ^ " in dictionary."))
+  else
+    raise
+      (IllegalMove ("Word \"" ^ word ^ "\" is not in the dictionary."))
 
 (*to_letter_lst [word] returns [word] converted into a list of the
   letters in the list in the same order. Ex. to_letter_lst "hello"
