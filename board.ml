@@ -19,7 +19,7 @@ type adjacent_tiles = {
 (*TODO: Bonus should be more sophisticated *)
 
 (** [itile] is an information tile for the info_board. *)
-type itile = { bonus : int }
+type itile = { bonus : string }
 
 type t = {
   n : int;
@@ -45,8 +45,23 @@ let init_tile_board n =
   let init_row n i = Array.make n (init_tile ()) in
   Array.init n (init_row n)
 
+(*D is for doubling a tile, T is for tripling a tile, DW is Doubling the
+  word, TW is tripling the word value, BW is a bonus word in the
+  dictionary*)
+
+(*Generates bonus tile locations*)
+let generate_bonus_tiles n n_tl =
+  let _ = Random.self_init in
+  let rec generate_bonus_tiles_h n_tl tl_lst =
+    if n_tl > 0 then generate_bonus_tiles_h (n_tl - 1) tl_lst
+    else tl_lst
+  in
+  generate_bonus_tiles_h n_tl []
+
+let assign_bonus_tiles info_board = failwith "TODO"
+
 let init_info_board n =
-  let init_row n i = Array.make n (init_itile 0) in
+  let init_row n i = Array.make n (init_itile "N") in
   Array.init n (init_row n)
 
 let empty_board json_dict n =
