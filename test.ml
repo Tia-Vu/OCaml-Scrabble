@@ -10,12 +10,20 @@ open Pool
   We mainly use blackbox testing as evaluating the actual edge cases in
   the gameplay is important - not causing errors is not enough. After we
   write such tests, we evaluate the coverage of the tests using bisect,
-  and if the coverage is significantly low, we add more glassbox tesing.
+  and if the coverage is significantly low, we add more glassbox tesing
+  so we don't get unexpected errors during the gameplay. The to_string
+  function of each module is tested via playtest and not here since
+  their correctness depends on their aesthetics, which its standard will
+  easily change over time, and the tests become outdated every time the
+  standard changes.
 
-  - Board: We test all the functions in .mli in using unite tests except
-  for the to_string function, which will be tested by playtesting. This
-  is because to_string is mainly about the aesthetics, and it may change
-  frequently.
+  - Board: The testing plan for this module fits the general description
+  above.
+
+  - Hand, pool: pool has mutable structure, where the tiles in it are
+  removed when [Hand.draw_nletters] is called. Thus in this module we
+  draw various number of tiles (0~100 for pool and 0~10 for hand) and
+  see if the size of the pool/hand reduced as much as we expected.
 
   ********************************************************************)
 
@@ -181,18 +189,43 @@ let rec create_many_draw_nletters_hsize_test test_list = function
         :: test_list )
         (m - 1)
 
-(** [has_word_test name word hand expected] constructs an OUnit test
-    named [name] that asserts the quality of [Hand.has_word] with
+(** [hand_has_word_test name word hand expected] constructs an OUnit
+    test named [name] that asserts the quality of [Hand.has_word] with
     [expected]. *)
-let has_word_test
+let hand_has_word_test
     (name : string)
     (letter_lst : char list)
     (hand : Hand.t)
     (expected : bool) : test =
-  "has_word: " ^ name >:: fun _ ->
+  "h_has_word: " ^ name >:: fun _ ->
   assert_equal expected
-    (has_word letter_lst hand)
+    (Hand.has_word letter_lst hand)
     ~printer:string_of_bool
+
+(** [hand_spend_word_test name word hand expected] constructs an OUnit
+    test named [name] that asserts the quality of [Hand.spend_word] with
+    [expected]. *)
+let hand_spend_word_test
+    (name : string)
+    (letter_lst : char list)
+    (hand : Hand.t)
+    (expected : Hand.t) : test =
+  "h_spend_word: " ^ name >:: fun _ ->
+  assert_equal expected
+    (Hand.spend_word letter_lst hand)
+    ~printer:(pp_list pp_char)
+    ~cmp:(cmp_unordered_lists Char.compare)
+
+(** [hand_spend_word_error_test name word hand] constructs an OUnit test
+    named [name] that asserts that [Hand.spend_word] raises
+    [InsufficientTiles]. *)
+let hand_spend_word_error_test
+    (name : string)
+    (letter_lst : char list)
+    (hand : Hand.t) : test =
+  "h_spend_word_error_test: " ^ name >:: fun _ ->
+  assert_raises InsufficentTiles (fun () ->
+      Hand.spend_word letter_lst hand)
 
 (********************************************************************
   End helper functions.
@@ -362,18 +395,34 @@ let board_tests =
 
 let hand_tests =
   [
-    has_word_test "apple in [a;p;p;l;e]"
+    hand_has_word_test "apple in [a;p;p;l;e]"
       [ 'a'; 'p'; 'p'; 'l'; 'e' ]
       [ 'a'; 'p'; 'p'; 'l'; 'e' ]
       true;
-    has_word_test "apple in [p;p;l;e;d;a]"
+    hand_has_word_test "apple in [p;p;l;e;d;a]"
       [ 'a'; 'p'; 'p'; 'l'; 'e' ]
       [ 'p'; 'p'; 'l'; 'e'; 'd'; 'a' ]
       true;
-    has_word_test "apple not in []" [ 'a'; 'p'; 'p'; 'l'; 'e' ] [] false;
-    has_word_test "apple not in [a;p;l;e]"
+    hand_has_word_test "apple not in []"
+      [ 'a'; 'p'; 'p'; 'l'; 'e' ]
+      [] false;
+    hand_has_word_test "apple not in [a;p;l;e]"
       [ 'a'; 'p'; 'p'; 'l'; 'e' ]
       [ 'a'; 'p'; 'l'; 'e' ] false;
+    hand_spend_word_test {|spend "cape" from [c;c;a;a;p;p;e;e]|}
+      [ 'c'; 'a'; 'p'; 'e' ]
+      [ 'c'; 'c'; 'a'; 'a'; 'p'; 'p'; 'e'; 'e' ]
+      [ 'c'; 'a'; 'p'; 'e' ];
+    hand_spend_word_test {|spend "apple" from [e;a;p;p;l]|}
+      [ 'a'; 'p'; 'p'; 'l'; 'e' ]
+      [ 'e'; 'a'; 'p'; 'p'; 'l' ]
+      [];
+    hand_spend_word_error_test {|spend "apple" from empty hand|}
+      [ 'a'; 'p'; 'p'; 'l'; 'e' ]
+      (Hand.empty_hand ());
+    hand_spend_word_error_test {|spend "apple" from [a;p;l;e|}
+      [ 'a'; 'p'; 'p'; 'l'; 'e' ]
+      [ 'a'; 'p'; 'l'; 'e' ];
   ]
 
 let draw_nletters_psize_test =
