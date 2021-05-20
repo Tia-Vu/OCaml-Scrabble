@@ -9,6 +9,14 @@ val print_scores : Score.t -> unit
 
 val print_hand : Hand.t -> unit
 
+val print_round_start : unit -> unit
+
+val print_round_end : unit -> unit
+
+val print_separator : unit -> unit
+
+val print_player_turn : int -> unit
+
 val print_move_instructions : unit -> unit
 
 val print_try_again : unit -> unit
