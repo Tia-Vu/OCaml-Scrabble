@@ -52,6 +52,14 @@ type t = {
 (*Return a new dictionary from json*)
 let dict_from_json json = json |> to_assoc |> List.map (fun (x, y) -> x)
 
+let extend_dict json dict =
+  match json with
+  | Some j ->
+      dict
+      @ ( j |> Yojson.Basic.Util.to_list
+        |> List.map (fun x -> Yojson.Basic.Util.to_string x) )
+  | None -> dict
+
 let create_tile l x y = { letter = l; coord = (x, y) }
 
 let blank_tile_char = '#'
@@ -102,12 +110,12 @@ let init_info_board n =
   |> generate_bonus_tiles n dw DW
   |> generate_bonus_tiles n tw TW
 
-let empty_board json_dict n =
+let empty_board json_dict bonus_words n =
   {
     n;
     tile_board = init_tile_board n;
     info_board = init_info_board n;
-    dict = dict_from_json json_dict;
+    dict = dict_from_json json_dict |> extend_dict bonus_words;
     is_empty = true;
   }
 

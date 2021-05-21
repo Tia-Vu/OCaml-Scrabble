@@ -18,9 +18,9 @@ type bonus =
     attempted *)
 exception IllegalMove of string
 
-(** [empty_board j n] initializes an empty board of size [n]x[n] with a
-    dictionary stored in [j].*)
-val empty_board : Yojson.Basic.t -> int -> t
+(** [empty_board j b n] initializes an empty board of size [n]x[n] with
+    a dictionary stored in [j] after adding bonus words stored in [b].*)
+val empty_board : Yojson.Basic.t -> Yojson.Basic.t option -> int -> t
 
 (** [requires_letters board word (row,col) dir] is the required letters
     to place [word] on [board] starting at [(row,col)] in direction

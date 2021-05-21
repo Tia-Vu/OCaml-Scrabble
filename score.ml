@@ -7,8 +7,11 @@ type t = {
 }
 
 let bonus_words_from_json json =
-  json |> Yojson.Basic.Util.to_list
-  |> List.map (fun x -> Yojson.Basic.Util.to_string x)
+  match json with
+  | Some j ->
+      j |> Yojson.Basic.Util.to_list
+      |> List.map (fun x -> Yojson.Basic.Util.to_string x)
+  | None -> []
 
 let create json =
   { score = 0; bonus_words = bonus_words_from_json json }
