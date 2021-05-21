@@ -244,7 +244,7 @@ let hand_spend_word_error_test
 
 let dict = Yojson.Basic.from_file "dictionary.json"
 
-let empty_board = Board.empty_board dict 25
+let empty_board = Board.empty_board dict None 25
 
 let board_tests =
   [
