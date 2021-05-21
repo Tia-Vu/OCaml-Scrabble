@@ -533,7 +533,7 @@ let score_tests =
       ]
       15;
     score_update_test {|N "camel" (a bonus word)|} wbonus_score
-      [ [ ('c', N); ('a', N); ('m', N); ('e', N); ('l', N) ] ]
+      [ List.rev [ ('c', N); ('a', N); ('m', N); ('e', N); ('l', N) ] ]
       45;
   ]
 

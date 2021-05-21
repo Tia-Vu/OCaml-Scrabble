@@ -58,7 +58,7 @@ let is_bonus word t = List.mem word t.bonus_words
 let score_lst_to_word lst =
   let rec rec_ver lst acc =
     match lst with
-    | (h, _) :: t -> rec_ver t (acc ^ Char.escaped h)
+    | (h, _) :: t -> rec_ver t (Char.escaped h ^ acc)
     | [] -> acc
   in
   rec_ver lst ""
