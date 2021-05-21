@@ -7,6 +7,10 @@ open Pool
 
   Test Plan
 
+  The Game module is tested via playtest, as the interaction on the
+  command line is the core experience of the module. All other modules
+  are tested by both unit tests and playtest.
+
   We mainly use blackbox testing as evaluating the actual edge cases in
   the gameplay is important - not causing errors is not enough. After we
   write such tests, we evaluate the coverage of the tests using bisect,
@@ -234,9 +238,26 @@ let hand_spend_word_error_test
     (name : string)
     (letter_lst : char list)
     (hand : Hand.t) : test =
-  "h_spend_word_error_test: " ^ name >:: fun _ ->
+  "h_spend_word_error: " ^ name >:: fun _ ->
   assert_raises InsufficentTiles (fun () ->
       Hand.spend_word letter_lst hand)
+
+(** [score_update_test name words expected] constructs an OUnit test
+    named [name] that asserts the score increment of
+    [Score.update_score] with [expected]. *)
+let score_update_test
+    (name : string)
+    (score : Score.t)
+    (words : (char * Board.bonus) list list)
+    (expected : int) : test =
+  let rev_words = List.map List.rev words in
+  let start_score = Score.get_score score in
+  let updated_score =
+    Score.get_score (Score.update_score score rev_words)
+  in
+  let increment = updated_score - start_score in
+  "s_update: " ^ name >:: fun _ ->
+  assert_equal expected increment ~printer:string_of_int
 
 (********************************************************************
   End helper functions.
@@ -409,17 +430,6 @@ let board_tests =
       (place_word empty_board "pine" (10, 10) true)
       "apple" (10, 14) true
       [ 'a'; 'p'; 'p'; 'l'; 'e' ];
-    (* Replaced by play tests board_to_string_test "Empty 1 x 1 board"
-       (Board.empty_board dict 1) "."; board_to_string_test "Empty 2 x 2
-       board" (Board.empty_board dict 2) ". .\n. .";
-       board_to_string_test "Place 'c' horizontally on 4 x 4 board"
-       (place_word (Board.empty_board dict 4) "c" (0, 0) true) "c . .
-       .\n. . . .\n. . . .\n. . . ."; board_to_string_test "Place 'car'
-       horizontally on 4 x 4 board" (place_word (Board.empty_board dict
-       4) "car" (0, 0) true) "c a r .\n. . . .\n. . . .\n. . . .";
-       board_to_string_test "Place 'car' vertically on 4 x 4 board"
-       (place_word (Board.empty_board dict 4) "car" (0, 0) false) "c . .
-       .\na . . .\nr . . .\n. . . ."; *)
   ]
 
 let hand_tests =
@@ -454,7 +464,107 @@ let hand_tests =
       [ 'a'; 'p'; 'l'; 'e' ];
   ]
 
-let score_tests = []
+let vanila_score = Score.create None
+
+let bonus_json = Yojson.Basic.from_string {|["camel","cat"]|}
+
+let wbonus_score = Score.create (Some bonus_json)
+
+let score_tests =
+  [
+    score_update_test {|Empty word list|} vanila_score [ [] ] 0;
+    score_update_test {|No bonus "apple"|} vanila_score
+      [ [ ('a', N); ('p', N); ('p', N); ('l', N); ('e', N) ] ]
+      9;
+    score_update_test {|Double Letter on 'a', "apple"|} vanila_score
+      [ [ ('a', DL); ('p', N); ('p', N); ('l', N); ('e', N) ] ]
+      10;
+    score_update_test {|Tripple Letter on 'a', "apple"|} vanila_score
+      [ [ ('a', TL); ('p', N); ('p', N); ('l', N); ('e', N) ] ]
+      11;
+    score_update_test {|Double Letter on 'a','p', "apple"|} vanila_score
+      [ [ ('a', TL); ('p', N); ('p', DL); ('l', N); ('e', N) ] ]
+      14;
+    score_update_test {|DL 'a', TL 'p', "apple"|} vanila_score
+      [ [ ('a', DL); ('p', N); ('p', TL); ('l', N); ('e', N) ] ]
+      16;
+    score_update_test {|DW 'a', "apple"|} vanila_score
+      [ [ ('a', DW); ('p', N); ('p', N); ('l', N); ('e', N) ] ]
+      18;
+    score_update_test {|DW 'l', "apple"|} vanila_score
+      [ [ ('a', N); ('p', N); ('p', N); ('l', DW); ('e', N) ] ]
+      18;
+    score_update_test {|TW 'a', "apple"|} vanila_score
+      [ [ ('a', TW); ('p', N); ('p', N); ('l', N); ('e', N) ] ]
+      27;
+    score_update_test {|TW 'l', "apple"|} vanila_score
+      [ [ ('a', N); ('p', N); ('p', N); ('l', TW); ('e', N) ] ]
+      27;
+    score_update_test {|DW 'a', 'l', "apple"|} vanila_score
+      [ [ ('a', DW); ('p', N); ('p', N); ('l', DW); ('e', N) ] ]
+      36;
+    score_update_test {|DW 'a', TW 'l', "apple"|} vanila_score
+      [ [ ('a', DW); ('p', N); ('p', N); ('l', TW); ('e', N) ] ]
+      54;
+    score_update_test {|TW 'a', DW 'l', "apple"|} vanila_score
+      [ [ ('a', TW); ('p', N); ('p', N); ('l', DW); ('e', N) ] ]
+      54;
+    score_update_test {|DL 'a', DW 'l', "apple"|} vanila_score
+      [ [ ('a', DL); ('p', N); ('p', N); ('l', DW); ('e', N) ] ]
+      20;
+    score_update_test {|DL 'a','p', DW 'l', "apple"|} vanila_score
+      [ [ ('a', DL); ('p', DL); ('p', N); ('l', DW); ('e', N) ] ]
+      26;
+    score_update_test {|DL 'a', TL 'p', DW 'l', "apple"|} vanila_score
+      [ [ ('a', DL); ('p', TL); ('p', N); ('l', DW); ('e', N) ] ]
+      32;
+    score_update_test {|DL 'a', TW 'l', "apple"|} vanila_score
+      [ [ ('a', DL); ('p', N); ('p', N); ('l', TW); ('e', N) ] ]
+      30;
+    score_update_test {|DL 'a','p', TW 'l', "apple"|} vanila_score
+      [ [ ('a', DL); ('p', DL); ('p', N); ('l', TW); ('e', N) ] ]
+      39;
+    score_update_test {|DL 'a', TL 'p', TW 'l', "apple"|} vanila_score
+      [ [ ('a', DL); ('p', TL); ('p', N); ('l', TW); ('e', N) ] ]
+      48;
+    score_update_test {|plain "car" and DW "cat" |} vanila_score
+      [
+        [ ('c', N); ('a', N); ('r', N) ];
+        [ ('c', N); ('a', DW); ('t', N) ];
+      ]
+      15;
+    score_update_test {|N "camel" (a bonus word)|} wbonus_score
+      [ [ ('c', N); ('a', N); ('m', N); ('e', N); ('l', N) ] ]
+      45;
+    score_update_test {|DW "a" in "camel" (a bonus word)|} wbonus_score
+      [ [ ('c', N); ('a', DW); ('m', N); ('e', N); ('l', N) ] ]
+      90;
+    score_update_test {|TW "a" in "camel" (a bonus word)|} wbonus_score
+      [ [ ('c', N); ('a', TW); ('m', N); ('e', N); ('l', N) ] ]
+      135;
+    score_update_test {|DL "a" in "camel" (a bonus word)|} wbonus_score
+      [ [ ('c', N); ('a', DL); ('m', N); ('e', N); ('l', N) ] ]
+      50;
+    score_update_test {|TL "a" in "camel" (a bonus word)|} wbonus_score
+      [ [ ('c', N); ('a', TL); ('m', N); ('e', N); ('l', N) ] ]
+      55;
+    score_update_test {|DW 'c', DL "a"  in "camel" (a bonus word)|}
+      wbonus_score
+      [ [ ('c', DW); ('a', DL); ('m', N); ('e', N); ('l', N) ] ]
+      100;
+    score_update_test {|DW 'c', TL "a"  in "camel" (a bonus word)|}
+      wbonus_score
+      [ [ ('c', DW); ('a', TL); ('m', N); ('e', N); ('l', N) ] ]
+      110;
+    score_update_test {|TW 'c', DL "a"  in "camel" (a bonus word)|}
+      wbonus_score
+      [ [ ('c', TW); ('a', DL); ('m', N); ('e', N); ('l', N) ] ]
+      150;
+    score_update_test {|TW 'c', TL "a"  in "camel" (a bonus word)|}
+      wbonus_score
+      [ [ ('c', TW); ('a', TL); ('m', N); ('e', N); ('l', N) ] ]
+      165;
+  ]
 
 let draw_nletters_psize_test =
   create_many_draw_nletters_psize_test [] 100
@@ -472,6 +582,7 @@ let suite =
            hand_tests;
            draw_nletters_psize_test;
            draw_nletters_hsize_test;
+           score_tests;
          ]
 
 let _ = run_test_tt_main suite

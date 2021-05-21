@@ -165,10 +165,12 @@ let rec dict_prompt () =
   print_endline
     "\n\
      Please enter the (valid) name of the json dictionary file you \
-     want to load.\n";
+     want to load or type \"Default\" to use the built in dictionary.\n";
   print_string "> ";
   let file_name = read_line () in
   if Sys.file_exists file_name then Yojson.Basic.from_file file_name
+  else if file_name = "Default" then
+    Yojson.Basic.from_file "dictionary.json"
   else dict_prompt ()
 
 (*[bonus_prompt] prompts the player for the name of a json file of the

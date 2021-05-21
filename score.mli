@@ -5,7 +5,12 @@ type t
 
 (** [update_score score words] is the new score with the appropriate
     amount of points added to a player's original [score] after they
-    play [words] on the board .*)
+    play [words] on the board
+
+    Requires: Each word in [words] is expected to be reverse in order
+    ex) for "camel" it should be
+    [('l',N);('e',N);('m',N);('a',N);('c',N)] .*)
+
 val update_score : t -> (char * Board.bonus) list list -> t
 
 (**[create json] is a new, initial score.*)
