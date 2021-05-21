@@ -8,8 +8,8 @@ type t
     play [words] on the board .*)
 val update_score : t -> (char * Board.bonus) list list -> t
 
-(**[create ()] is a new, initial score.*)
-val create : unit -> t
+(**[create json] is a new, initial score.*)
+val create : Yojson.Basic.t -> t
 
 (**[to_string t] is a string representation of [t]*)
 val to_string : t -> string

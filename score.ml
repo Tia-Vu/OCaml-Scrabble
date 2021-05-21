@@ -1,20 +1,17 @@
 open Board
+open Yojson.Basic.Util
 
-type t = int
+type t = {
+  score : int;
+  bonus_words : string list;
+}
 
-let bonus_words =
-  [
-    "ocaml";
-    "camel";
-    "hump";
-    "caravan";
-    "desert";
-    "oasis";
-    "dromedary";
-    "bactrian";
-  ]
+let bonus_words_from_json json =
+  json |> Yojson.Basic.Util.to_list
+  |> List.map (fun x -> Yojson.Basic.Util.to_string x)
 
-let create () = 0
+let create json =
+  { score = 0; bonus_words = bonus_words_from_json json }
 
 let letter_score lttr =
   match lttr with
@@ -65,7 +62,20 @@ let apply_word_bonus word base_score =
 
 (*Based on a custom list of bonus words, returns whether the word is a
   bonus word*)
-let is_bonus word = List.mem word bonus_words
+let is_bonus word t = List.mem word t.bonus_words
+
+(*Note similar function in test.ml*)
+let score_lst_to_word lst =
+  let rec rec_ver lst acc =
+    match lst with
+    | (h, _) :: t -> rec_ver t (Char.escaped h ^ acc)
+    | [] -> acc
+  in
+  rec_ver lst ""
+
+let apply_bonus_words t letter_lst base_score =
+  let word = score_lst_to_word letter_lst in
+  if is_bonus word t then base_score * 5 else base_score
 
 (*Gets the base score value of a certain word with letter bonuses
   applied*)
@@ -77,14 +87,20 @@ let base_word_score word =
 
 (*Gets the value that needs to be added to the score based on the words
   [words] that are formed by the move*)
-let get_added_score words =
+let get_added_score t words =
   List.fold_left
     (fun acc word ->
-      acc + (base_word_score word |> apply_word_bonus word))
+      acc
+      + ( base_word_score word |> apply_word_bonus word
+        |> apply_bonus_words t word ))
     0 words
 
 (*[update_score score new_words] returns the updated score given the new
   words [new_words] formed by a move*)
-let update_score score new_words = score + get_added_score new_words
+let update_score t new_words =
+  {
+    score = t.score + get_added_score t new_words;
+    bonus_words = t.bonus_words;
+  }
 
-let to_string score = string_of_int score
+let to_string t = string_of_int t.score

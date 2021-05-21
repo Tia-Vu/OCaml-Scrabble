@@ -148,7 +148,21 @@ let play_game s =
   of that json file.*)
 let rec dict_prompt () =
   print_endline
-    "Please enter the (valid) name of the json dictionary file you \
+    "\n\
+     Please enter the (valid) name of the json dictionary file you \
+     want to load.\n";
+  print_string "> ";
+  let file_name = read_line () in
+  if Sys.file_exists file_name then Yojson.Basic.from_file file_name
+  else dict_prompt ()
+
+(*[bonus_prompt] prompts the player for the name of a json file of the
+  dictionary to be used for the current game and returns Yojson.Basic.t
+  of that json file.*)
+let rec bonus_prompt () =
+  print_endline
+    "\n\
+     Please enter the (valid) name of the json bonus words file you \
      want to load.\n";
   print_string "> ";
   let file_name = read_line () in
@@ -200,11 +214,12 @@ let read_lpts file_name =
 (*Builds a list of as many players as is passed in, each with their
   player number and a new hand and score. Precondition: passed in number
   is >= 1.*)
-let rec build_init_players pool acc = function
+let rec build_init_players bonus_words pool acc = function
   | 0 -> acc
   | n ->
-      build_init_players pool
-        ((n, fill_hand pool 7 (empty_hand ()), create ()) :: acc)
+      build_init_players bonus_words pool
+        ( (n, fill_hand pool 7 (empty_hand ()), create bonus_words)
+        :: acc )
         (n - 1)
 
 (**[run] is the main method of the Scrabble game. It initializes an
@@ -214,11 +229,12 @@ let run () =
   print_intro ();
   let new_board = empty_board (dict_prompt ()) (size_prompt () + 1) in
   let new_pool = init_pool () in
+  let bonus_words = bonus_prompt () in
   let player_number = player_prompt () in
   let init_state =
     {
       board = new_board;
-      players = build_init_players new_pool [] player_number;
+      players = build_init_players bonus_words new_pool [] player_number;
       letter_points = read_lpts "letter_points.json";
       pool = new_pool;
     }
