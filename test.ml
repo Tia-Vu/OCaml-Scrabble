@@ -15,11 +15,11 @@ open Pool
   the gameplay is important - not causing errors is not enough. After we
   write such tests, we evaluate the coverage of the tests using bisect,
   and if the coverage is significantly low, we add more glassbox tesing
-  so we don't get unexpected errors during the gameplay. The to_string
-  function of each module is tested via playtest and not here since
-  their correctness depends on their aesthetics, which its standard will
-  easily change over time, and the tests become outdated every time the
-  standard changes.
+  so we don't get unexpected errors during the gameplay.
+
+  The to_string function of each module is tested via playtest and not
+  here since their correctness depends on their aesthetics, which the
+  standard will easily and frequently change over time.
 
   In this module there is a randomized testing for hand and pool module.
   pool has mutable structure, where the tiles in it are removed when
