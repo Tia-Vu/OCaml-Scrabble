@@ -107,9 +107,10 @@ let board_place_word_test
     ~printer:pp_board
 
 (** [board_illegal_place_word_test name board word coord dir
-    expected_error_msg] constructs an OUnit test named [name] that
-    asserts that [Board.place_word] raises [Board.IllegalMove] with
-    string [expected_error_msg]. *)
+    expected_error_msg]
+    constructs an OUnit test named [name] that asserts that
+    [Board.place_word] raises [Board.IllegalMove] with string
+    [expected_error_msg]. *)
 let board_illegal_place_word_test
     (name : string)
     (board : Board.t)
@@ -181,8 +182,8 @@ let rec create_many_draw_nletters_psize_test test_list = function
   | -1 -> test_list
   | m ->
       create_many_draw_nletters_psize_test
-        ( draw_nletters_pool_size_test ("n = " ^ string_of_int m) m
-        :: test_list )
+        (draw_nletters_pool_size_test ("n = " ^ string_of_int m) m
+        :: test_list)
         (m - 1)
 
 (** [draw_nletters_hand_size_test name n] constructs an OUnit test named
@@ -200,8 +201,8 @@ let rec create_many_draw_nletters_hsize_test test_list = function
   | -1 -> test_list
   | m ->
       create_many_draw_nletters_hsize_test
-        ( draw_nletters_hand_size_test ("n = " ^ string_of_int m) m
-        :: test_list )
+        (draw_nletters_hand_size_test ("n = " ^ string_of_int m) m
+        :: test_list)
         (m - 1)
 
 (** [hand_has_word_test name word hand expected] constructs an OUnit

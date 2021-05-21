@@ -54,6 +54,10 @@ val print_exc_hand_insufficient_tiles : unit -> unit
     prompt.*)
 val print_intro : unit -> unit
 
+(** [print_winner ()] prints the player numbers (inputted in list form)
+    who got the highest score in the game and their score.*)
+val print_winner : int -> int list -> unit
+
 (** [print_end ()] declares the end of the game on the command prompt.*)
 val print_end : unit -> unit
 

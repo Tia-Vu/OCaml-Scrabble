@@ -136,9 +136,10 @@ let rec cycle_players state = function
           }
           t
 
-(* [play_game] runs each round. If the game should not terminate yet, it
-   will prompt for user input and update the game state accordingly. The
-   new board, hand, and score will be printed.*)
+(* [play_game] runs each round and is the final state after the game has
+   ended. If the game should not terminate yet, it will prompt for user
+   input and update the game state accordingly. The new board, hand, and
+   score will be printed.*)
 let play_game s =
   let rec pass_rounds state continue =
     match continue with
@@ -154,7 +155,9 @@ let play_game s =
         print_round_end ();
         pass_rounds new_state_rev_players
           (continue_game new_state_rev_players.players)
-    | false -> print_endline "\nAll players have quit."
+    | false ->
+        print_endline "\nAll players have quit.";
+        state
   in
   pass_rounds s true
 
@@ -242,6 +245,36 @@ let rec build_init_players bonus_words pool acc = function
         :: acc)
         (n - 1)
 
+let build_number_score_list players =
+  List.map (fun (n, _, s, _) -> (n, get_score s)) players
+
+(*[compare_label_score (l1,s1) (l2,s2)] is positive if s1 < s2, negative
+  if s1 > s2, and 0 if s1 = s2.*)
+let compare_label_score (l1, s1) (l2, s2) = s2 - s1
+
+(*[highest_score_label ls_list] is the number label (in list form) and
+  corresponding score of the player with the highest score in ls_list, a
+  list of labels and scores of form [(l1,s1);...(ln,sn)]. If multiple
+  players have the same highest score, all number labels are returned in
+  a list with that score in the form of ([l1,l2,..], s1).
+
+  Precondition: The list of labels and scores is nonempty.*)
+let highest_label_score (ls_list : (int * int) list) =
+  let sorted = List.sort compare_label_score ls_list in
+  match sorted with
+  | (_, high_score) :: t ->
+      ( List.fold_right
+          (fun (n, s) acc -> if s = high_score then n :: acc else acc)
+          sorted [],
+        high_score )
+  | [] -> failwith "Precondition failed"
+
+let declare_winner players =
+  let winners, score =
+    highest_label_score (build_number_score_list players)
+  in
+  print_winner score winners
+
 (**[run] is the main method of the Scrabble game. It initializes an
    empty board and score and starts the passing of turns, eventually
    terminating the game when the turns are done.*)
@@ -261,7 +294,8 @@ let run () =
       pool = new_pool;
     }
   in
-  play_game init_state;
+  let final_state = play_game init_state in
+  declare_winner final_state.players;
   print_end ();
   exit 0
 

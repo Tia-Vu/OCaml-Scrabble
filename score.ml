@@ -82,8 +82,8 @@ let get_added_score t words =
   List.fold_left
     (fun acc word ->
       acc
-      + ( base_word_score word |> apply_word_bonus word
-        |> apply_bonus_words t word ))
+      + (base_word_score word |> apply_word_bonus word
+        |> apply_bonus_words t word))
     0 words
 
 (*[update_score score new_words] returns the updated score given the new
