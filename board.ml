@@ -24,9 +24,9 @@ let string_of_bonus bon =
   match bon with
   | N -> "Normal"
   | DL -> "Double Letter"
-  | TL -> "Tripple Letter"
+  | TL -> "Triple Letter"
   | DW -> "Double Word"
-  | TW -> "Tripple Word"
+  | TW -> "Triple Word"
 
 type adjacent_tiles = {
   left : tile;

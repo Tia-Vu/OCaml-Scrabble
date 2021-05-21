@@ -135,6 +135,7 @@ let play_game s =
         let new_state_rev_players =
           { new_state with players = List.rev new_state.players }
         in
+        print_pool new_state.pool;
         print_round_end ();
         pass_rounds new_state_rev_players
           (continue_game new_state_rev_players)
@@ -153,6 +154,25 @@ let rec dict_prompt () =
   let file_name = read_line () in
   if Sys.file_exists file_name then Yojson.Basic.from_file file_name
   else dict_prompt ()
+
+(*[size_prompt] prompts the player for the size of board they would like
+  to use*)
+let rec size_prompt () =
+  print_endline
+    "\n\
+     Please enter the board size you would like to use. Typing 7 \
+     results in a 7x7 board.  Valid board sizes are from 5 to 30. \n";
+  print_string "> ";
+  let size = read_line () in
+  try
+    let n = int_of_string size in
+    if n >= 5 && n <= 30 then n
+    else (
+      print_endline "\nPlease enter a valid board size. \n";
+      size_prompt () )
+  with _ ->
+    print_endline "\nPlease enter a valid number. \n";
+    size_prompt ()
 
 let rec player_prompt () =
   print_endline
@@ -192,10 +212,9 @@ let rec build_init_players pool acc = function
    terminating the game when the turns are done.*)
 let run () =
   print_intro ();
-  let new_board = empty_board (dict_prompt ()) 25 in
+  let new_board = empty_board (dict_prompt ()) (size_prompt () + 1) in
   let new_pool = init_pool () in
   let player_number = player_prompt () in
-  (*TODO: Replace 6 with user input*)
   let init_state =
     {
       board = new_board;

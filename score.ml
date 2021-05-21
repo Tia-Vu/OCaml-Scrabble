@@ -11,7 +11,6 @@ let bonus_words =
     "desert";
     "oasis";
     "dromedary";
-    "dromedary";
     "bactrian";
   ]
 
@@ -66,7 +65,7 @@ let apply_word_bonus word base_score =
 
 (*Based on a custom list of bonus words, returns whether the word is a
   bonus word*)
-let is_bonus bonus word = List.mem word bonus
+let is_bonus word = List.mem word bonus_words
 
 (*Gets the base score value of a certain word with letter bonuses
   applied*)
