@@ -454,6 +454,8 @@ let hand_tests =
       [ 'a'; 'p'; 'l'; 'e' ];
   ]
 
+let score_tests = []
+
 let draw_nletters_psize_test =
   create_many_draw_nletters_psize_test [] 100
 

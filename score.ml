@@ -13,35 +13,21 @@ let bonus_words_from_json json =
 let create json =
   { score = 0; bonus_words = bonus_words_from_json json }
 
+let letter_score_dict =
+  Yojson.Basic.from_file "letter_points.json"
+  |> to_assoc
+  |> List.map (fun (x, y) -> (x.[0], to_int y))
+
 let letter_score lttr =
-  match lttr with
-  | 'a' -> 1
-  | 'b' -> 3
-  | 'c' -> 3
-  | 'd' -> 2
-  | 'e' -> 1
-  | 'f' -> 4
-  | 'g' -> 2
-  | 'h' -> 4
-  | 'i' -> 1
-  | 'j' -> 8
-  | 'k' -> 5
-  | 'l' -> 1
-  | 'm' -> 3
-  | 'n' -> 1
-  | 'o' -> 1
-  | 'p' -> 3
-  | 'q' -> 10
-  | 'r' -> 1
-  | 's' -> 1
-  | 't' -> 1
-  | 'u' -> 1
-  | 'v' -> 4
-  | 'w' -> 4
-  | 'x' -> 8
-  | 'y' -> 4
-  | 'z' -> 10
-  | _ -> 0
+  match List.assoc_opt lttr letter_score_dict with
+  | Some score -> score
+  | None -> 0
+
+(* DEPRECATED: match lttr with | 'a' -> 1 | 'b' -> 3 | 'c' -> 3 | 'd' ->
+   2 | 'e' -> 1 | 'f' -> 4 | 'g' -> 2 | 'h' -> 4 | 'i' -> 1 | 'j' -> 8 |
+   'k' -> 5 | 'l' -> 1 | 'm' -> 3 | 'n' -> 1 | 'o' -> 1 | 'p' -> 3 | 'q'
+   -> 10 | 'r' -> 1 | 's' -> 1 | 't' -> 1 | 'u' -> 1 | 'v' -> 4 | 'w' ->
+   4 | 'x' -> 8 | 'y' -> 4 | 'z' -> 10 | _ -> 0 *)
 
 let apply_letter_bonus bonus lttr_score =
   match bonus with
@@ -104,5 +90,7 @@ let update_score t new_words =
     score = t.score + get_added_score t new_words;
     bonus_words = t.bonus_words;
   }
+
+let get_score t = t.score
 
 let to_string t = string_of_int t.score

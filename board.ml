@@ -58,9 +58,7 @@ let blank_tile_char = '#'
 
 let init_tile () = create_tile blank_tile_char (-1) (-1)
 
-let init_tile_board n =
-  let init_row n i = Array.make n (init_tile ()) in
-  Array.init n (init_row n)
+let init_tile_board n = Array.make_matrix n n (init_tile ())
 
 (*Bonus tile board*)
 
@@ -93,8 +91,7 @@ let generate_bonus_tiles n n_tle bonus info_board =
   generate_bonus_tiles_h n_tle
 
 let init_info_board n =
-  let init_row n i = Array.make n (init_itile N) in
-  let init_board = Array.init n (init_row n) in
+  let init_board = Array.make_matrix n n (init_itile N) in
   let d = n * n * 8 / 225 in
   let t = n * n * 16 / 225 in
   let dw = n * n * 24 / 225 in
