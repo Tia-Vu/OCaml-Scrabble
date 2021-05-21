@@ -457,6 +457,33 @@ let place_word_no_validation t word start_coord dir =
         n = t.n;
         tile_board =
           place_word_hor (to_letter_lst word) start_coord t.tile_board;
+        info_board =
+          remove_bonus_tiles word start_coord t.info_board dir;
+        is_empty = false;
+      }
+  | false ->
+      {
+        t with
+        n = t.n;
+        tile_board =
+          place_word_ver (to_letter_lst word) start_coord t.tile_board;
+        info_board =
+          remove_bonus_tiles word start_coord t.info_board dir;
+        is_empty = false;
+      }
+
+(** [place_word_no_validation_keep_info t w (row,col) dir] gives a new
+    board with the word placed on it and the info board is not changed.
+    No validation check is done.*)
+let place_word_no_validation_keep_info t word start_coord dir =
+  let t = copy_board t in
+  match dir with
+  | true ->
+      {
+        t with
+        n = t.n;
+        tile_board =
+          place_word_hor (to_letter_lst word) start_coord t.tile_board;
         info_board = t.info_board;
         is_empty = false;
       }
@@ -579,7 +606,9 @@ let ver_score_word t (row, col) =
 (*Gets all words formed by the horizontal move including 1 letter words
   and turns them into a scoring list*)
 let get_created_words_hor t word start_coord =
-  let new_t = place_word_no_validation t word start_coord true in
+  let new_t =
+    place_word_no_validation_keep_info t word start_coord true
+  in
   let arr = [ hor_score_word new_t start_coord ] in
   let length = String.length word in
   let rec get_created_words_hor_h word_lst len (row, col) =
@@ -597,7 +626,9 @@ let get_created_words_hor t word start_coord =
 (*Gets all words formed by the vertical move including 1 letter words
   and turns them into a scoring*)
 let get_created_words_ver t word start_coord =
-  let new_t = place_word_no_validation t word start_coord false in
+  let new_t =
+    place_word_no_validation_keep_info t word start_coord false
+  in
   let arr = [ ver_score_word new_t start_coord ] in
   let length = String.length word in
   let rec get_created_words_ver_h word_lst len (row, col) =
