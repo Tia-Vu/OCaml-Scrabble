@@ -7,6 +7,10 @@ open Pool
 
   Test Plan
 
+  The Game module is tested via playtest, as the interaction on the
+  command line is the core experience of the module. All other modules
+  are tested by both unit tests and playtest.
+
   We mainly use blackbox testing as evaluating the actual edge cases in
   the gameplay is important - not causing errors is not enough. After we
   write such tests, we evaluate the coverage of the tests using bisect,
@@ -234,9 +238,25 @@ let hand_spend_word_error_test
     (name : string)
     (letter_lst : char list)
     (hand : Hand.t) : test =
-  "h_spend_word_error_test: " ^ name >:: fun _ ->
+  "h_spend_word_error: " ^ name >:: fun _ ->
   assert_raises InsufficentTiles (fun () ->
       Hand.spend_word letter_lst hand)
+
+(** [score_update_test name words expected] constructs an OUnit test
+    named [name] that asserts the score increment of
+    [Score.update_score] with [expected]. *)
+let score_update_test
+    (name : string)
+    (score : Score.t)
+    (words : (char * Board.bonus) list list)
+    (expected : int) : test =
+  let start_score = Score.get_score score in
+  let updated_score =
+    Score.get_score (Score.update_score score words)
+  in
+  let increment = updated_score - start_score in
+  "s_update: " ^ name >:: fun _ ->
+  assert_equal expected increment ~printer:string_of_int
 
 (********************************************************************
   End helper functions.
@@ -454,7 +474,122 @@ let hand_tests =
       [ 'a'; 'p'; 'l'; 'e' ];
   ]
 
-let score_tests = []
+let empty_json = Yojson.Basic.from_string {|[]|}
+
+let vanila_score = Score.create empty_json
+
+let score_tests =
+  [
+    score_update_test {|Empty word list|} vanila_score [ [] ] 0;
+    score_update_test {|No bonus "apple"|} vanila_score
+      [
+        [ ('a', N) ];
+        [ ('p', N) ];
+        [ ('p', N) ];
+        [ ('l', N) ];
+        [ ('e', N) ];
+      ]
+      9;
+    score_update_test {|Double Letter on 'a', "apple"|} vanila_score
+      [
+        [ ('a', DL) ];
+        [ ('p', N) ];
+        [ ('p', N) ];
+        [ ('l', N) ];
+        [ ('e', N) ];
+      ]
+      10;
+    score_update_test {|Tripple Letter on 'a', "apple"|} vanila_score
+      [
+        [ ('a', DL) ];
+        [ ('p', N) ];
+        [ ('p', N) ];
+        [ ('l', N) ];
+        [ ('e', N) ];
+      ]
+      11;
+    score_update_test {|Double Letter on 'a','p', "apple"|} vanila_score
+      [
+        [ ('a', DL) ];
+        [ ('p', N) ];
+        [ ('p', DL) ];
+        [ ('l', N) ];
+        [ ('e', N) ];
+      ]
+      14;
+    score_update_test {|DL 'a', TL 'p', "apple"|} vanila_score
+      [
+        [ ('a', DL) ];
+        [ ('p', N) ];
+        [ ('p', TL) ];
+        [ ('l', N) ];
+        [ ('e', N) ];
+      ]
+      17;
+    score_update_test {|DW 'a', "apple"|} vanila_score
+      [
+        [ ('a', DW) ];
+        [ ('p', N) ];
+        [ ('p', N) ];
+        [ ('l', N) ];
+        [ ('e', N) ];
+      ]
+      18;
+    score_update_test {|DW 'l', "apple"|} vanila_score
+      [
+        [ ('a', N) ];
+        [ ('p', N) ];
+        [ ('p', N) ];
+        [ ('l', DW) ];
+        [ ('e', N) ];
+      ]
+      18;
+    score_update_test {|TW 'a', "apple"|} vanila_score
+      [
+        [ ('a', TW) ];
+        [ ('p', N) ];
+        [ ('p', N) ];
+        [ ('l', N) ];
+        [ ('e', N) ];
+      ]
+      27;
+    score_update_test {|TW 'l', "apple"|} vanila_score
+      [
+        [ ('a', N) ];
+        [ ('p', N) ];
+        [ ('p', N) ];
+        [ ('l', TW) ];
+        [ ('e', N) ];
+      ]
+      27;
+    score_update_test {|DW 'a', 'l', "apple"|} vanila_score
+      [
+        [ ('a', DW) ];
+        [ ('p', N) ];
+        [ ('p', N) ];
+        [ ('l', DW) ];
+        [ ('e', N) ];
+      ]
+      36;
+    score_update_test {|DW 'a', TW 'l', "apple"|} vanila_score
+      [
+        [ ('a', DW) ];
+        [ ('p', N) ];
+        [ ('p', N) ];
+        [ ('l', TW) ];
+        [ ('e', N) ];
+      ]
+      54;
+    score_update_test {|TW 'a', DW 'l', "apple"|} vanila_score
+      [
+        [ ('a', TW) ];
+        [ ('p', N) ];
+        [ ('p', N) ];
+        [ ('l', DW) ];
+        [ ('e', N) ];
+      ]
+      54;
+  ]
 
 let draw_nletters_psize_test =
   create_many_draw_nletters_psize_test [] 100
