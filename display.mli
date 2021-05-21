@@ -57,4 +57,6 @@ val print_intro : unit -> unit
 (** [print_end ()] declares the end of the game on the command prompt.*)
 val print_end : unit -> unit
 
+(** [print_pool ()] prints the number of letters in the letter tiles on
+    the command prompt.*)
 val print_pool : Pool.t -> unit

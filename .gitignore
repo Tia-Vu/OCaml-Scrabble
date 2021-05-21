@@ -8,6 +8,14 @@
 *.byte
 _build/
 
+# bisect 
+*.coverage
+_coverage/
+
+# docs
+_doc.private
+_doc.public
+
 # temporary files
 *.swp
 *~

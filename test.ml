@@ -4,7 +4,24 @@ open Hand
 open Pool
 
 (********************************************************************
+
   Test Plan
+
+  We mainly use blackbox testing as evaluating the actual edge cases in
+  the gameplay is important - not causing errors is not enough. After we
+  write such tests, we evaluate the coverage of the tests using bisect,
+  and if the coverage is significantly low, we add more glassbox tesing
+  so we don't get unexpected errors during the gameplay. The to_string
+  function of each module is tested via playtest and not here since
+  their correctness depends on their aesthetics, which its standard will
+  easily change over time, and the tests become outdated every time the
+  standard changes.
+
+  In this module there is a randomized testing for hand and pool module.
+  pool has mutable structure, where the tiles in it are removed when
+  [Hand.draw_nletters] is called. Thus in this module we draw various
+  number of tiles (0~100 for pool and 0~10 for hand) and see if the size
+  of the pool/hand reduced as much as we expected.
 
   ********************************************************************)
 
@@ -14,6 +31,9 @@ open Pool
 
 (** [pp_string s] pretty-prints string [s]. *)
 let pp_string s = "\"" ^ s ^ "\""
+
+(** [pp_char c] pretty-prints char [c]. *)
+let pp_char c = "\"" ^ Char.escaped c ^ "\""
 
 (** [pp_list pp_elt lst] pretty-prints list [lst], using [pp_elt] to
     pretty-print each element of [lst].
@@ -48,6 +68,15 @@ let cmp_set_like_lists lst1 lst2 =
   List.length lst1 = List.length uniq1
   && List.length lst2 = List.length uniq2
   && uniq1 = uniq2
+
+(** [cmp_unordered_lists lst1 lst2] compares two lists to see whether
+    they are equivalent lists, irrelevant of their orders.*)
+let cmp_unordered_lists compare lst1 lst2 =
+  let sorted1 = List.sort compare lst1 in
+  let sorted2 = List.sort compare lst2 in
+  List.length lst1 = List.length sorted1
+  && List.length lst2 = List.length sorted2
+  && sorted1 = sorted2
 
 (* DEPRECATED: Board_to_string is tested through play test.
    [board_to_string name input expected_output] constructs an OUnit test
@@ -101,7 +130,24 @@ let board_get_created_words_test
   "b_get_created_words_test: " ^ name >:: fun _ ->
   assert_equal expected
     (get_created_words board word coord dir)
-    ~cmp:cmp_set_like_lists ~printer:(pp_list pp_string)
+    ~cmp:(cmp_unordered_lists String.compare)
+    ~printer:(pp_list pp_string)
+
+(** [board_requires_letters_test name board word coord dir expected]
+    constructs an OUnit test named [name] that asserts the quality of
+    [Board.requires_letters]. *)
+let board_requires_letters_test
+    (name : string)
+    (board : Board.t)
+    (word : string)
+    (coord : int * int)
+    (dir : bool)
+    (expected : char list) : test =
+  "b_requires_letters_test: " ^ name >:: fun _ ->
+  assert_equal expected
+    (Board.requires_letters board word coord dir)
+    ~cmp:(cmp_unordered_lists Char.compare)
+    ~printer:(pp_list pp_char)
 
 (** [draw_nletters_pool_size_test name n] constructs an OUnit test named
     [name] that asserts the quality of [Pool.draw_nletters] with the
@@ -141,18 +187,43 @@ let rec create_many_draw_nletters_hsize_test test_list = function
         :: test_list )
         (m - 1)
 
-(** [has_word_test name word hand expected] constructs an OUnit test
-    named [name] that asserts the quality of [Hand.has_word] with
+(** [hand_has_word_test name word hand expected] constructs an OUnit
+    test named [name] that asserts the quality of [Hand.has_word] with
     [expected]. *)
-let has_word_test
+let hand_has_word_test
     (name : string)
     (letter_lst : char list)
     (hand : Hand.t)
     (expected : bool) : test =
-  "has_word: " ^ name >:: fun _ ->
+  "h_has_word: " ^ name >:: fun _ ->
   assert_equal expected
-    (has_word letter_lst hand)
+    (Hand.has_word letter_lst hand)
     ~printer:string_of_bool
+
+(** [hand_spend_word_test name word hand expected] constructs an OUnit
+    test named [name] that asserts the quality of [Hand.spend_word] with
+    [expected]. *)
+let hand_spend_word_test
+    (name : string)
+    (letter_lst : char list)
+    (hand : Hand.t)
+    (expected : Hand.t) : test =
+  "h_spend_word: " ^ name >:: fun _ ->
+  assert_equal expected
+    (Hand.spend_word letter_lst hand)
+    ~printer:(pp_list pp_char)
+    ~cmp:(cmp_unordered_lists Char.compare)
+
+(** [hand_spend_word_error_test name word hand] constructs an OUnit test
+    named [name] that asserts that [Hand.spend_word] raises
+    [InsufficientTiles]. *)
+let hand_spend_word_error_test
+    (name : string)
+    (letter_lst : char list)
+    (hand : Hand.t) : test =
+  "h_spend_word_error_test: " ^ name >:: fun _ ->
+  assert_raises InsufficentTiles (fun () ->
+      Hand.spend_word letter_lst hand)
 
 (********************************************************************
   End helper functions.
@@ -268,6 +339,45 @@ let board_tests =
       {|extend horizontal word (input only the new suffix)|}
       (place_word empty_board "pine" (10, 10) true)
       "apple" (10, 14) true [ "pineapple" ];
+    board_requires_letters_test "Place a horizontal word on empty board"
+      empty_board "apple" (10, 10) true
+      [ 'a'; 'p'; 'p'; 'l'; 'e' ];
+    board_requires_letters_test "Place a vertical word on empty board"
+      empty_board "apple" (10, 10) false
+      [ 'a'; 'p'; 'p'; 'l'; 'e' ];
+    board_requires_letters_test
+      {|horizontal "ba" below horizontal "apple"|}
+      (place_word empty_board "apple" (10, 10) true)
+      "ba" (11, 10) true [ 'b'; 'a' ];
+    board_requires_letters_test
+      {|vertical "ba" on the right of vertical "apple"|}
+      (place_word empty_board "apple" (10, 10) false)
+      "ba" (10, 11) false [ 'b'; 'a' ];
+    board_requires_letters_test
+      {|extend horizontal word (input only the new prefix)|}
+      (place_word empty_board "apple" (10, 10) true)
+      "pine" (10, 6) true [ 'p'; 'i'; 'n'; 'e' ];
+    board_requires_letters_test
+      {|extend horizontal word (input whole word)|}
+      (place_word empty_board "apple" (10, 10) true)
+      "pineapple" (10, 6) true [ 'p'; 'i'; 'n'; 'e' ];
+    board_requires_letters_test
+      {|extend vertical word (input only the new prefix)|}
+      (place_word empty_board "apple" (10, 10) false)
+      "pine" (6, 10) false [ 'p'; 'i'; 'n'; 'e' ];
+    board_requires_letters_test
+      {|extend vertical word (input whole word)|}
+      (place_word empty_board "apple" (10, 10) false)
+      "pineapple" (6, 10) false [ 'p'; 'i'; 'n'; 'e' ];
+    board_requires_letters_test
+      {|extend horizontal word (input only the new prefix)|}
+      (place_word empty_board "do" (10, 10) true)
+      "a" (10, 9) true [ 'a' ];
+    board_requires_letters_test
+      {|extend horizontal word (input only the new suffix)|}
+      (place_word empty_board "pine" (10, 10) true)
+      "apple" (10, 14) true
+      [ 'a'; 'p'; 'p'; 'l'; 'e' ];
     (* Replaced by play tests board_to_string_test "Empty 1 x 1 board"
        (Board.empty_board dict 1) "."; board_to_string_test "Empty 2 x 2
        board" (Board.empty_board dict 2) ". .\n. .";
@@ -283,14 +393,34 @@ let board_tests =
 
 let hand_tests =
   [
-    has_word_test "apple in [a;p;p;l;e]"
+    hand_has_word_test "apple in [a;p;p;l;e]"
       [ 'a'; 'p'; 'p'; 'l'; 'e' ]
       [ 'a'; 'p'; 'p'; 'l'; 'e' ]
       true;
-    has_word_test "apple in [p;p;l;e;d;a]"
+    hand_has_word_test "apple in [p;p;l;e;d;a]"
       [ 'a'; 'p'; 'p'; 'l'; 'e' ]
       [ 'p'; 'p'; 'l'; 'e'; 'd'; 'a' ]
       true;
+    hand_has_word_test "apple not in []"
+      [ 'a'; 'p'; 'p'; 'l'; 'e' ]
+      [] false;
+    hand_has_word_test "apple not in [a;p;l;e]"
+      [ 'a'; 'p'; 'p'; 'l'; 'e' ]
+      [ 'a'; 'p'; 'l'; 'e' ] false;
+    hand_spend_word_test {|spend "cape" from [c;c;a;a;p;p;e;e]|}
+      [ 'c'; 'a'; 'p'; 'e' ]
+      [ 'c'; 'c'; 'a'; 'a'; 'p'; 'p'; 'e'; 'e' ]
+      [ 'c'; 'a'; 'p'; 'e' ];
+    hand_spend_word_test {|spend "apple" from [e;a;p;p;l]|}
+      [ 'a'; 'p'; 'p'; 'l'; 'e' ]
+      [ 'e'; 'a'; 'p'; 'p'; 'l' ]
+      [];
+    hand_spend_word_error_test {|spend "apple" from empty hand|}
+      [ 'a'; 'p'; 'p'; 'l'; 'e' ]
+      (Hand.empty_hand ());
+    hand_spend_word_error_test {|spend "apple" from [a;p;l;e|}
+      [ 'a'; 'p'; 'p'; 'l'; 'e' ]
+      [ 'a'; 'p'; 'l'; 'e' ];
   ]
 
 let draw_nletters_psize_test =
