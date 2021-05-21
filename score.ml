@@ -41,6 +41,7 @@ let word_bonus bonus word_score =
   | TW -> word_score * 3
   | _ -> word_score
 
+(*Applies word bonuses from double or triple word tiles on the board*)
 let apply_word_bonus word base_score =
   List.fold_left
     (fun acc (letter, bonus) -> word_bonus bonus acc)
@@ -59,6 +60,7 @@ let score_lst_to_word lst =
   in
   rec_ver lst ""
 
+(*Returns value of word after applying the bonus word bonus*)
 let apply_bonus_words t letter_lst base_score =
   let word = score_lst_to_word letter_lst in
   if is_bonus word t then base_score * 5 else base_score
