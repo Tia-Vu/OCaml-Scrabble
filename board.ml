@@ -54,7 +54,9 @@ let dict_from_json json = json |> to_assoc |> List.map (fun (x, y) -> x)
 
 let create_tile l x y = { letter = l; coord = (x, y) }
 
-let init_tile () = create_tile '.' (-1) (-1)
+let blank_tile_char = '#'
+
+let init_tile () = create_tile blank_tile_char (-1) (-1)
 
 let init_tile_board n =
   let init_row n i = Array.make n (init_tile ()) in
@@ -262,7 +264,7 @@ let to_letter_lst word =
   to_letter_lst_h word []
 
 (** [tile_occupied tle] checks is [tle] has a letter. *)
-let tile_occupied tle = tle.letter <> '.'
+let tile_occupied tle = tle.letter <> blank_tile_char
 
 (**[tiles_occupied_hor t w (row,col) length idx] is a helper function
    for tiles_occupied that checks horizontally Precondition: [(row,col)]
@@ -272,7 +274,7 @@ let rec tiles_occupied_hor t letters (row, col) =
   match letters with
   | [] -> false
   | h :: tail ->
-      if board_letter = '.' || h = board_letter then
+      if board_letter = blank_tile_char || h = board_letter then
         tiles_occupied_hor t tail (row, col + 1)
       else true
 
@@ -282,7 +284,7 @@ let rec tiles_occupied_ver t letters (row, col) =
   match letters with
   | [] -> false
   | h :: tail ->
-      if board_letter = '.' || h = board_letter then
+      if board_letter = blank_tile_char || h = board_letter then
         tiles_occupied_ver t tail (row + 1, col)
       else true
 
@@ -307,10 +309,10 @@ let off_board t word (row, col) direction =
 
 let tiles_near_current_tile t (row, col) =
   let adjacent = get_adjacent_tiles (row, col) t in
-  adjacent.left.letter <> '.'
-  || adjacent.right.letter <> '.'
-  || adjacent.up.letter <> '.'
-  || adjacent.down.letter <> '.'
+  adjacent.left.letter <> blank_tile_char
+  || adjacent.right.letter <> blank_tile_char
+  || adjacent.up.letter <> blank_tile_char
+  || adjacent.down.letter <> blank_tile_char
 
 (**[tiles_near_current_tiles] t idx (row,col) dir gives whether there
    are tiles adjacent to the tiles starting at the tile at [(row,col)]
