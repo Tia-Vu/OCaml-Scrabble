@@ -239,6 +239,7 @@ let run () =
       pool = new_pool;
     }
   in
+  print_pool new_pool;
   play_game init_state;
 
   print_end ();
