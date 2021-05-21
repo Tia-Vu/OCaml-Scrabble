@@ -47,5 +47,10 @@ val place_word : t -> string -> int * int -> bool -> t
 val get_created_words :
   t -> string -> int * int -> bool -> (char * bonus) list list
 
-(** [to_string] is a string represntation of the board.*)
+(** [to_string board] is a string represntation of the [board].*)
 val to_string : t -> string
+
+(** [print_board board] is prints the board. The shape is similar to
+    [to_string] but this prints the board with colors, being aware of
+    bonus tiles.*)
+val print_board : t -> unit

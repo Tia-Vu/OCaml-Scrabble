@@ -1,4 +1,5 @@
 open Yojson.Basic.Util
+open ANSITerminal
 
 exception IllegalMove of string
 
@@ -18,6 +19,14 @@ type bonus =
   | TL
   | DW
   | TW
+
+let string_of_bonus bon =
+  match bon with
+  | N -> "Normal"
+  | DL -> "Double Letter"
+  | TL -> "Tripple Letter"
+  | DW -> "Double Word"
+  | TW -> "Tripple Word"
 
 type adjacent_tiles = {
   left : tile;
@@ -169,6 +178,64 @@ let to_string b =
   ^ col_indices_row_string (Array.length rows)
   ^ "\n"
   ^ String.sub string_of_rows 1 (String.length string_of_rows - 1)
+
+let bonus_to_color bon =
+  match bon with
+  | N -> ANSITerminal.default
+  | DL -> ANSITerminal.cyan
+  | TL -> ANSITerminal.blue
+  | DW -> ANSITerminal.magenta
+  | TW -> ANSITerminal.red
+
+let itile_to_color itil = bonus_to_color itil.bonus
+
+let extract_ready_to_print_row
+    spacing
+    (tb : tile array)
+    (ib : itile array) =
+  Array.map2
+    (fun til itil ->
+      ([ itile_to_color itil ], Char.escaped til.letter ^ space spacing))
+    tb ib
+  |> Array.to_list
+
+let extract_ready_to_print_rows spacing b =
+  Array.map2
+    (extract_ready_to_print_row spacing)
+    b.tile_board b.info_board
+  |> Array.mapi (fun i row ->
+         ([], formatted_int i ^ space spacing) :: row)
+
+let print_ready_to_print_row row =
+  List.fold_left
+    (fun _ (styles, str) -> ANSITerminal.print_string styles str)
+    () row;
+  print_string [] "\n"
+
+let print_ready_to_print_rows rows =
+  for i = 0 to Array.length rows - 1 do
+    print_ready_to_print_row rows.(i)
+  done
+
+let print_col_indices_row spacing n =
+  print_string [] (space (spacing * 2) ^ col_indices_row_string n)
+
+let print_legend () =
+  print_string [ bonus_to_color N ] (string_of_bonus N ^ " ");
+  print_string [ bonus_to_color DL ] (string_of_bonus DL ^ " ");
+  print_string [ bonus_to_color TL ] (string_of_bonus TL ^ " ");
+  print_string [ bonus_to_color DW ] (string_of_bonus DW ^ " ");
+  print_string [ bonus_to_color TW ] (string_of_bonus TW ^ " ")
+
+let print_board b =
+  let spacing = 2 in
+  let ready_to_print_rows = extract_ready_to_print_rows spacing b in
+  print_string [] "\n";
+  print_string [] "\n";
+  print_col_indices_row spacing b.n;
+  print_string [] "\n";
+  print_ready_to_print_rows ready_to_print_rows;
+  print_legend ()
 
 (** Helper function to check if word is in dictionary*)
 let word_in_dict dict word = List.mem word dict
