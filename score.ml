@@ -2,6 +2,19 @@ open Board
 
 type t = int
 
+let bonus_words =
+  [
+    "ocaml";
+    "camel";
+    "hump";
+    "caravan";
+    "desert";
+    "oasis";
+    "dromedary";
+    "dromedary";
+    "bactrian";
+  ]
+
 let create () = 0
 
 let letter_score lttr =

@@ -84,10 +84,10 @@ let generate_bonus_tiles n n_tle bonus info_board =
 let init_info_board n =
   let init_row n i = Array.make n (init_itile N) in
   let init_board = Array.init n (init_row n) in
-  let d = n * n * (8 / 225) in
-  let t = n * n * (16 / 225) in
-  let dw = n * n * (24 / 225) in
-  let tw = n * n * (12 / 225) in
+  let d = n * n * 8 / 225 in
+  let t = n * n * 16 / 225 in
+  let dw = n * n * 24 / 225 in
+  let tw = n * n * 12 / 225 in
   init_board
   |> generate_bonus_tiles n d DL
   |> generate_bonus_tiles n t TL
