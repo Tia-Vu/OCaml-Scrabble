@@ -536,6 +536,34 @@ let score_tests =
     score_update_test {|N "camel" (a bonus word)|} wbonus_score
       [ [ ('c', N); ('a', N); ('m', N); ('e', N); ('l', N) ] ]
       45;
+    score_update_test {|DW "a" in "camel" (a bonus word)|} wbonus_score
+      [ [ ('c', N); ('a', DW); ('m', N); ('e', N); ('l', N) ] ]
+      90;
+    score_update_test {|TW "a" in "camel" (a bonus word)|} wbonus_score
+      [ [ ('c', N); ('a', TW); ('m', N); ('e', N); ('l', N) ] ]
+      135;
+    score_update_test {|DL "a" in "camel" (a bonus word)|} wbonus_score
+      [ [ ('c', N); ('a', DL); ('m', N); ('e', N); ('l', N) ] ]
+      50;
+    score_update_test {|TL "a" in "camel" (a bonus word)|} wbonus_score
+      [ [ ('c', N); ('a', TL); ('m', N); ('e', N); ('l', N) ] ]
+      55;
+    score_update_test {|DW 'c', DL "a"  in "camel" (a bonus word)|}
+      wbonus_score
+      [ [ ('c', DW); ('a', DL); ('m', N); ('e', N); ('l', N) ] ]
+      100;
+    score_update_test {|DW 'c', TL "a"  in "camel" (a bonus word)|}
+      wbonus_score
+      [ [ ('c', DW); ('a', TL); ('m', N); ('e', N); ('l', N) ] ]
+      110;
+    score_update_test {|TW 'c', DL "a"  in "camel" (a bonus word)|}
+      wbonus_score
+      [ [ ('c', TW); ('a', DL); ('m', N); ('e', N); ('l', N) ] ]
+      150;
+    score_update_test {|TW 'c', TL "a"  in "camel" (a bonus word)|}
+      wbonus_score
+      [ [ ('c', TW); ('a', TL); ('m', N); ('e', N); ('l', N) ] ]
+      165;
   ]
 
 let draw_nletters_psize_test =
