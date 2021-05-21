@@ -14,9 +14,14 @@ let print_separator () =
 
 let print_try_again () = print_string "\nPlease try again.\n"
 
-let print_round_start () = print_string "\n A new round has begun.\n"
+let print_round_start () =
+  print_separator ();
+  print_string "\n A new round has begun.\n"
 
-let print_round_end () = print_string "\n The round has ended. \n"
+let print_round_end () =
+  print_separator ();
+  print_string "\nThe round has ended. \n";
+  print_separator ()
 
 let print_player_turn n =
   print_string ("\n Player " ^ string_of_int n ^ "'s turn!")
@@ -32,16 +37,20 @@ let print_exc_hand_insufficient_tiles () =
     "\nThe hand does not have enough letter tiles to place the word."
 
 let print_move_instructions () =
-  print_separator ();
-  print_endline "Make your move!";
+  print_endline "\nMake your move!";
   print_endline
     "\n\
      You may either enter [Draw] to discard your current hand for a \
-     new one, or";
+     new one,";
   print_endline
     "enter a move to place on the board in the form of [word row col \
      direction] with";
-  print_endline "direction being [hor] or [ver].";
+  print_endline
+    "direction being [hor] or [ver], or [Quit] to leave the game.";
+  print_endline
+    "Scores of quitted players will still be considered in final \
+     rankings.";
+  print_endline "The game will end if all players have [Quit].";
   print_string ">"
 
 let print_intro () = print_endline "\nThis is OCaml Scrabble!\n"

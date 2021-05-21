@@ -7,7 +7,9 @@ open Yojson.Basic.Util
 
 type game_state = {
   board : Board.t;
-  players : (int * Hand.t * Score.t) list;
+  (*Each player holds value true if they are still playing, false if
+    they are not.*)
+  players : (int * Hand.t * Score.t * bool) list;
   letter_points : (char * int) list;
   pool : Pool.t;
 }
@@ -18,9 +20,12 @@ type place_word_command = {
   direction : bool;
 }
 
-(* Checks if there are any possible moves. [continue_game] is true if
-   there are still possible moves to be made, and false if not.*)
-let continue_game game_state = true
+(* Checks if the game should end. [continue_game] is true if there are
+   still players who have not quit, and false if not.*)
+let continue_game players =
+  List.fold_left
+    (fun acc (_, _, _, playing) -> acc || playing)
+    false players
 
 (*[read_input_move] prompts the player for a move and returns it.*)
 let read_input_move () =
@@ -37,67 +42,74 @@ let rec parse_place_word (s : string) : place_word_command =
         word = w;
         start_coord = (int_of_string x, int_of_string y);
         direction =
-          ( if dir = "hor" then true
+          (if dir = "hor" then true
           else if dir = "ver" then false
           else raise Malformed
             (*TODO if dir is anything else than "hor" or "ver" then it
-              fails*) );
+              fails*));
       }
   | _ -> raise Malformed
+
+let process_cmd s (n, hand, score, playing) cmd =
+  let req_letters =
+    requires_letters s.board cmd.word cmd.start_coord cmd.direction
+  in
+  let placed =
+    place_word s.board cmd.word cmd.start_coord cmd.direction
+  in
+  let formed_words =
+    get_created_words s.board cmd.word cmd.start_coord cmd.direction
+  in
+  let new_hand = hand |> spend_word req_letters |> fill_hand s.pool 7 in
+  let new_score = update_score score formed_words in
+  print_endline ("\nYou place the word " ^ cmd.word ^ ".");
+  {
+    s with
+    board = placed;
+    players = (n, new_hand, new_score, playing) :: s.players;
+  }
 
 (*[update_player_state] returns a new game state with the tuple of
   (player number, hand, score) that has been updated using the passed in
   move[input] being added to the player list.*)
-let update_player_state s (n, hand, score) input =
+let update_player_state s (n, hand, score, playing) input =
   match input with
+  | "Quit" ->
+      print_endline
+        ("\nPlayer " ^ string_of_int n ^ " has quit the game.");
+      { s with players = (n, hand, score, false) :: s.players }
   | "Draw" ->
       print_endline "\nYou discard your hand and redraw.";
       let redrawn_hand = draw_nletters s.pool 7 (empty_hand ()) in
-      { s with players = (n, redrawn_hand, score) :: s.players }
+      {
+        s with
+        players = (n, redrawn_hand, score, playing) :: s.players;
+      }
   | _ -> (
       match parse_place_word input with
       | exception Malformed -> raise Malformed
-      | cmd ->
-          let req_letters =
-            requires_letters s.board cmd.word cmd.start_coord
-              cmd.direction
-          in
-          let placed =
-            place_word s.board cmd.word cmd.start_coord cmd.direction
-          in
-          let formed_words =
-            get_created_words s.board cmd.word cmd.start_coord
-              cmd.direction
-          in
-          let new_hand =
-            hand |> spend_word req_letters |> fill_hand s.pool 7
-          in
-          let new_score = update_score score formed_words in
-          print_endline ("\nYou place the word " ^ cmd.word ^ ".");
-          {
-            s with
-            board = placed;
-            players = (n, new_hand, new_score) :: s.players;
-          } )
+      | cmd -> process_cmd s (n, hand, score, playing) cmd)
 
 (*Prompts the player until a legal move has been played and returns a
   new game state with the player's move reflected.*)
-let rec player_turn state (n, hand, score) =
+let rec player_turn state (n, hand, score, playing) =
   match
-    update_player_state state (n, hand, score) (read_input_move ())
+    update_player_state state
+      (n, hand, score, playing)
+      (read_input_move ())
   with
   | exception Board.IllegalMove s ->
       print_exc_board_illegal_move s;
       print_try_again ();
-      player_turn state (n, hand, score)
+      player_turn state (n, hand, score, playing)
   | exception Malformed ->
       print_exc_malformed ();
       print_try_again ();
-      player_turn state (n, hand, score)
+      player_turn state (n, hand, score, playing)
   | exception Hand.InsufficentTiles ->
       print_exc_hand_insufficient_tiles ();
       print_try_again ();
-      player_turn state (n, hand, score)
+      player_turn state (n, hand, score, playing)
   | new_state -> new_state
 
 (*Goes through the list of players, asking each for their moves and
@@ -108,18 +120,21 @@ let rec player_turn state (n, hand, score) =
   second argument that is being pattern matched.*)
 let rec cycle_players state = function
   | [] -> state
-  | (n, hand, score) :: t ->
-      print_separator ();
-      print_player_turn n;
-      print_board state.board;
-      print_hand hand;
-      print_scores score;
-      print_separator ();
-      cycle_players
-        (*state with players = player_turn state (n, hand, score) ::
-          state.players;*)
-        (player_turn state (n, hand, score))
-        t
+  | (n, hand, score, playing) :: t ->
+      if playing then (
+        print_separator ();
+        print_player_turn n;
+        print_board state.board;
+        print_hand hand;
+        print_scores score;
+        cycle_players (player_turn state (n, hand, score, playing)) t)
+      else
+        cycle_players
+          {
+            state with
+            players = (n, hand, score, playing) :: state.players;
+          }
+          t
 
 (* [play_game] runs each round. If the game should not terminate yet, it
    will prompt for user input and update the game state accordingly. The
@@ -138,8 +153,8 @@ let play_game s =
         print_pool new_state.pool;
         print_round_end ();
         pass_rounds new_state_rev_players
-          (continue_game new_state_rev_players)
-    | false -> print_endline "No more moves can be made."
+          (continue_game new_state_rev_players.players)
+    | false -> print_endline "\nAll players have quit."
   in
   pass_rounds s true
 
@@ -188,7 +203,7 @@ let rec size_prompt () =
     if n >= 5 && n <= 30 then n
     else (
       print_endline "\nPlease enter a valid board size. \n";
-      size_prompt () )
+      size_prompt ())
   with _ ->
     print_endline "\nPlease enter a valid number. \n";
     size_prompt ()
@@ -204,7 +219,7 @@ let rec player_prompt () =
     else (
       print_endline
         "\nPlease enter a number of players of at least 1. \n";
-      player_prompt () )
+      player_prompt ())
   with _ ->
     print_endline "\nPlease enter a valid number. \n";
     player_prompt ()
@@ -223,8 +238,8 @@ let rec build_init_players bonus_words pool acc = function
   | 0 -> acc
   | n ->
       build_init_players bonus_words pool
-        ( (n, fill_hand pool 7 (empty_hand ()), create bonus_words)
-        :: acc )
+        ((n, fill_hand pool 7 (empty_hand ()), create bonus_words, true)
+        :: acc)
         (n - 1)
 
 (**[run] is the main method of the Scrabble game. It initializes an
@@ -246,7 +261,6 @@ let run () =
       pool = new_pool;
     }
   in
-  print_pool new_pool;
   play_game init_state;
   print_end ();
   exit 0
