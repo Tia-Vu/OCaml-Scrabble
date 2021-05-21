@@ -1,8 +1,6 @@
 (** The module in charge of pretty printing the current board in the
     command line. *)
 
-let print_board board = print_endline ("\n" ^ Board.to_string board)
-
 let print_scores scores =
   print_endline ("\nYour Current Score: " ^ Score.to_string scores)
 
@@ -52,3 +50,6 @@ let print_end () = print_endline "\nThank you for playing!\n"
 
 let print_pool p =
   print_endline ("Letter Pool: " ^ Pool.to_string p ^ "tiles left.")
+
+(*let print_board board = print_endline ("\n" ^ Board.to_string board)*)
+let print_board board = Board.print_board board
