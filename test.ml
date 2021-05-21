@@ -466,7 +466,7 @@ let hand_tests =
 
 let vanila_score = Score.create None
 
-let bonus_json = Yojson.Basic.from_string {|["camel","cat"]|}
+let bonus_json = Yojson.Basic.from_string {|["camel","car"]|}
 
 let wbonus_score = Score.create (Some bonus_json)
 
@@ -564,6 +564,34 @@ let score_tests =
       wbonus_score
       [ [ ('c', TW); ('a', TL); ('m', N); ('e', N); ('l', N) ] ]
       165;
+    score_update_test {|plain bonus word "camel" and plain "cat" |}
+      wbonus_score
+      [
+        [ ('c', N); ('a', N); ('m', N); ('e', N); ('l', N) ];
+        [ ('c', N); ('a', N); ('t', N) ];
+      ]
+      50;
+    score_update_test {|plain bonus word "camel" and DW "cat" |}
+      wbonus_score
+      [
+        [ ('c', N); ('a', N); ('m', N); ('e', N); ('l', N) ];
+        [ ('c', N); ('a', DW); ('t', N) ];
+      ]
+      55;
+    score_update_test {|DW bonus word "camel" and plain "cat" |}
+      wbonus_score
+      [
+        [ ('c', N); ('a', DW); ('m', N); ('e', N); ('l', N) ];
+        [ ('c', N); ('a', N); ('t', N) ];
+      ]
+      95;
+    score_update_test {|TW bonus word "camel" and  DL "a" in cat" |}
+      wbonus_score
+      [
+        [ ('c', N); ('a', TW); ('m', N); ('e', N); ('l', N) ];
+        [ ('c', N); ('a', DL); ('t', N) ];
+      ]
+      141;
   ]
 
 let draw_nletters_psize_test =
