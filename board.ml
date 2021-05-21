@@ -390,8 +390,7 @@ let place_word_no_validation t word start_coord dir =
         n = t.n;
         tile_board =
           place_word_hor (to_letter_lst word) start_coord t.tile_board;
-        info_board =
-          remove_bonus_tiles word start_coord t.info_board dir;
+        info_board = t.info_board;
         is_empty = false;
       }
   | false ->
@@ -400,8 +399,7 @@ let place_word_no_validation t word start_coord dir =
         n = t.n;
         tile_board =
           place_word_ver (to_letter_lst word) start_coord t.tile_board;
-        info_board =
-          remove_bonus_tiles word start_coord t.info_board dir;
+        info_board = t.info_board;
         is_empty = false;
       }
 

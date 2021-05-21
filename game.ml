@@ -37,11 +37,11 @@ let rec parse_place_word (s : string) : place_word_command =
         word = w;
         start_coord = (int_of_string x, int_of_string y);
         direction =
-          (if dir = "hor" then true
+          ( if dir = "hor" then true
           else if dir = "ver" then false
           else raise Malformed
             (*TODO if dir is anything else than "hor" or "ver" then it
-              fails*));
+              fails*) );
       }
   | _ -> raise Malformed
 
@@ -78,7 +78,7 @@ let update_player_state s (n, hand, score) input =
             s with
             board = placed;
             players = (n, new_hand, new_score) :: s.players;
-          })
+          } )
 
 (*Prompts the player until a legal move has been played and returns a
   new game state with the player's move reflected.*)
@@ -165,7 +165,7 @@ let rec player_prompt () =
     else (
       print_endline
         "\nPlease enter a number of players of at least 1. \n";
-      player_prompt ())
+      player_prompt () )
   with _ ->
     print_endline "\nPlease enter a valid number. \n";
     player_prompt ()
