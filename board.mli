@@ -6,6 +6,14 @@
 (** The abstract type of values representing boards. *)
 type t
 
+(**The bonus tile types*)
+type bonus =
+  | N
+  | DL
+  | TL
+  | DW
+  | TW
+
 (** The Exception [IllegalMove] is raised when an illegal move is
     attempted *)
 exception IllegalMove of string

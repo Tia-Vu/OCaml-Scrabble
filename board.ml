@@ -9,6 +9,16 @@ type tile = {
   coord : int * int;
 }
 
+(*DL is for doubling a letter, TL is for tripling a letter, DW is
+  doubling the word value, TW is tripling the word value, and N is for
+  no bonus*)
+type bonus =
+  | N
+  | DL
+  | TL
+  | DW
+  | TW
+
 type adjacent_tiles = {
   left : tile;
   up : tile;
@@ -19,7 +29,7 @@ type adjacent_tiles = {
 (*TODO: Bonus should be more sophisticated *)
 
 (** [itile] is an information tile for the info_board. *)
-type itile = { bonus : string }
+type itile = { bonus : bonus }
 
 type t = {
   n : int;
@@ -45,16 +55,13 @@ let init_tile_board n =
 
 (*Bonus tile board*)
 
-(*D is for doubling a tile, T is for tripling a tile, DW is Doubling the
-  word, TW is tripling the word value, BW is a bonus word in the
-  dictionary, and N is for no bonus*)
 let init_itile b = { bonus = b }
 
 let get_itile (row, col) info_board n =
-  if row < 0 || col < 0 || row >= n || col >= n then init_itile "N"
+  if row < 0 || col < 0 || row >= n || col >= n then init_itile N
   else info_board.(row).(col)
 
-let itile_occupied itle = itle.bonus <> "N"
+let itile_occupied itle = itle.bonus <> N
 
 let assign_bonus_tle bonus (row, col) info_board =
   info_board.(row).(col) <- { bonus }
@@ -76,17 +83,17 @@ let generate_bonus_tiles n n_tle bonus info_board =
   generate_bonus_tiles_h n_tle
 
 let init_info_board n =
-  let init_row n i = Array.make n (init_itile "N") in
+  let init_row n i = Array.make n (init_itile N) in
   let init_board = Array.init n (init_row n) in
   let d = n * n * (8 / 225) in
   let t = n * n * (16 / 225) in
   let dw = n * n * (24 / 225) in
   let tw = n * n * (12 / 225) in
   init_board
-  |> generate_bonus_tiles n d "D"
-  |> generate_bonus_tiles n t "T"
-  |> generate_bonus_tiles n dw "DW"
-  |> generate_bonus_tiles n tw "TW"
+  |> generate_bonus_tiles n d DL
+  |> generate_bonus_tiles n t TL
+  |> generate_bonus_tiles n dw DW
+  |> generate_bonus_tiles n tw TW
 
 let empty_board json_dict n =
   {
@@ -175,7 +182,7 @@ let check_in_dict dict word =
       (IllegalMove ("Word \"" ^ word ^ "\" is not in the dictionary."))
 
 (*to_letter_lst [word] returns [word] converted into a list of the
-  letters in the list in the same order. Ex. to_letter_lst "hello"
+  letters in the word in the same order. Ex. to_letter_lst "hello"
   returns ['h';'e';'l';'l';'o']*)
 let to_letter_lst word =
   let rec to_letter_lst_h word letter_lst =
@@ -260,7 +267,7 @@ let is_in_bound t coord =
   let x, y = coord in
   0 <= x && x < t.n && 0 <= y && y < t.n
 
-(* [word_start_hor t start_coord] is the starting x coordinate of the
+(* [word_start_hor t start_coord] is the starting row coordinate of the
    horizontal word that is a superset of the tile on [start_coord]*)
 let word_start_ver t start_coord =
   let x0, y = start_coord in
@@ -292,8 +299,8 @@ let vertical_word_of t start_coord =
   in
   !word
 
-(* [word_start_ver t start_coord] is the starting y coordinate of the
-   vertical word that is a superset of the tile on [start_coord]*)
+(* [word_start_ver t start_coord] is the starting col of the vertical
+   word that is a superset of the tile on [start_coord]*)
 let word_start_hor t start_coord =
   let x, y0 = start_coord in
   let y = ref y0 in
@@ -461,7 +468,38 @@ let place_word t word start_coord direction =
 
 (* Score stuff *)
 
-(*Gets all words formed by the horizontal move including 1 letter words*)
+let hor_score_word t (row, col) =
+  let start_col = word_start_hor t (row, col) in
+  let rec hor_score_word_h (row, col) word_lst =
+    if
+      is_in_bound t (row, col) && tile_occupied t.tile_board.(row).(col)
+    then
+      hor_score_word_h
+        (row, col + 1)
+        ( ( t.tile_board.(row).(col).letter,
+            t.info_board.(row).(col).bonus )
+        :: word_lst )
+    else word_lst
+  in
+  hor_score_word_h (row, start_col) []
+
+let ver_score_word t (row, col) =
+  let start_row = word_start_ver t (row, col) in
+  let rec ver_score_word_h (row, col) word_lst =
+    if
+      is_in_bound t (row, col) && tile_occupied t.tile_board.(row).(col)
+    then
+      ver_score_word_h
+        (row + 1, col)
+        ( ( t.tile_board.(row).(col).letter,
+            t.info_board.(row).(col).bonus )
+        :: word_lst )
+    else word_lst
+  in
+  ver_score_word_h (start_row, col) []
+
+(*Gets all words formed by the horizontal move including 1 letter words
+  and turns them into a scoring list*)
 let get_created_words_hor t word start_coord =
   let new_t = place_word_no_validation t word start_coord true in
   let arr = [ horizontal_word_of new_t start_coord ] in
@@ -478,7 +516,8 @@ let get_created_words_hor t word start_coord =
   in
   get_created_words_hor_h arr length start_coord
 
-(*Gets all words formed by the vertical move including 1 letter words*)
+(*Gets all words formed by the vertical move including 1 letter words
+  and turns them into a scoring*)
 let get_created_words_ver t word start_coord =
   let new_t = place_word_no_validation t word start_coord false in
   let arr = [ vertical_word_of new_t start_coord ] in
