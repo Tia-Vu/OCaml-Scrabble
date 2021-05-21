@@ -264,7 +264,7 @@ let score_update_test
 
 let dict = Yojson.Basic.from_file "dictionary.json"
 
-let empty_board = Board.empty_board dict 25
+let empty_board = Board.empty_board dict None 25
 
 let board_tests =
   [
@@ -429,17 +429,6 @@ let board_tests =
       (place_word empty_board "pine" (10, 10) true)
       "apple" (10, 14) true
       [ 'a'; 'p'; 'p'; 'l'; 'e' ];
-    (* Replaced by play tests board_to_string_test "Empty 1 x 1 board"
-       (Board.empty_board dict 1) "."; board_to_string_test "Empty 2 x 2
-       board" (Board.empty_board dict 2) ". .\n. .";
-       board_to_string_test "Place 'c' horizontally on 4 x 4 board"
-       (place_word (Board.empty_board dict 4) "c" (0, 0) true) "c . .
-       .\n. . . .\n. . . .\n. . . ."; board_to_string_test "Place 'car'
-       horizontally on 4 x 4 board" (place_word (Board.empty_board dict
-       4) "car" (0, 0) true) "c a r .\n. . . .\n. . . .\n. . . .";
-       board_to_string_test "Place 'car' vertically on 4 x 4 board"
-       (place_word (Board.empty_board dict 4) "car" (0, 0) false) "c . .
-       .\na . . .\nr . . .\n. . . ."; *)
   ]
 
 let hand_tests =
@@ -474,121 +463,78 @@ let hand_tests =
       [ 'a'; 'p'; 'l'; 'e' ];
   ]
 
-let empty_json = Yojson.Basic.from_string {|[]|}
+let vanila_score = Score.create None
 
-let vanila_score = Score.create empty_json
+let bonus_json = Yojson.Basic.from_string {|["camel","cat"]|}
+
+let wbonus_score = Score.create (Some bonus_json)
 
 let score_tests =
   [
     score_update_test {|Empty word list|} vanila_score [ [] ] 0;
     score_update_test {|No bonus "apple"|} vanila_score
-      [
-        [ ('a', N) ];
-        [ ('p', N) ];
-        [ ('p', N) ];
-        [ ('l', N) ];
-        [ ('e', N) ];
-      ]
+      [ [ ('a', N); ('p', N); ('p', N); ('l', N); ('e', N) ] ]
       9;
     score_update_test {|Double Letter on 'a', "apple"|} vanila_score
-      [
-        [ ('a', DL) ];
-        [ ('p', N) ];
-        [ ('p', N) ];
-        [ ('l', N) ];
-        [ ('e', N) ];
-      ]
+      [ [ ('a', DL); ('p', N); ('p', N); ('l', N); ('e', N) ] ]
       10;
     score_update_test {|Tripple Letter on 'a', "apple"|} vanila_score
-      [
-        [ ('a', DL) ];
-        [ ('p', N) ];
-        [ ('p', N) ];
-        [ ('l', N) ];
-        [ ('e', N) ];
-      ]
+      [ [ ('a', TL); ('p', N); ('p', N); ('l', N); ('e', N) ] ]
       11;
     score_update_test {|Double Letter on 'a','p', "apple"|} vanila_score
-      [
-        [ ('a', DL) ];
-        [ ('p', N) ];
-        [ ('p', DL) ];
-        [ ('l', N) ];
-        [ ('e', N) ];
-      ]
+      [ [ ('a', TL); ('p', N); ('p', DL); ('l', N); ('e', N) ] ]
       14;
     score_update_test {|DL 'a', TL 'p', "apple"|} vanila_score
-      [
-        [ ('a', DL) ];
-        [ ('p', N) ];
-        [ ('p', TL) ];
-        [ ('l', N) ];
-        [ ('e', N) ];
-      ]
-      17;
+      [ [ ('a', DL); ('p', N); ('p', TL); ('l', N); ('e', N) ] ]
+      16;
     score_update_test {|DW 'a', "apple"|} vanila_score
-      [
-        [ ('a', DW) ];
-        [ ('p', N) ];
-        [ ('p', N) ];
-        [ ('l', N) ];
-        [ ('e', N) ];
-      ]
+      [ [ ('a', DW); ('p', N); ('p', N); ('l', N); ('e', N) ] ]
       18;
     score_update_test {|DW 'l', "apple"|} vanila_score
-      [
-        [ ('a', N) ];
-        [ ('p', N) ];
-        [ ('p', N) ];
-        [ ('l', DW) ];
-        [ ('e', N) ];
-      ]
+      [ [ ('a', N); ('p', N); ('p', N); ('l', DW); ('e', N) ] ]
       18;
     score_update_test {|TW 'a', "apple"|} vanila_score
-      [
-        [ ('a', TW) ];
-        [ ('p', N) ];
-        [ ('p', N) ];
-        [ ('l', N) ];
-        [ ('e', N) ];
-      ]
+      [ [ ('a', TW); ('p', N); ('p', N); ('l', N); ('e', N) ] ]
       27;
     score_update_test {|TW 'l', "apple"|} vanila_score
-      [
-        [ ('a', N) ];
-        [ ('p', N) ];
-        [ ('p', N) ];
-        [ ('l', TW) ];
-        [ ('e', N) ];
-      ]
+      [ [ ('a', N); ('p', N); ('p', N); ('l', TW); ('e', N) ] ]
       27;
     score_update_test {|DW 'a', 'l', "apple"|} vanila_score
-      [
-        [ ('a', DW) ];
-        [ ('p', N) ];
-        [ ('p', N) ];
-        [ ('l', DW) ];
-        [ ('e', N) ];
-      ]
+      [ [ ('a', DW); ('p', N); ('p', N); ('l', DW); ('e', N) ] ]
       36;
     score_update_test {|DW 'a', TW 'l', "apple"|} vanila_score
-      [
-        [ ('a', DW) ];
-        [ ('p', N) ];
-        [ ('p', N) ];
-        [ ('l', TW) ];
-        [ ('e', N) ];
-      ]
+      [ [ ('a', DW); ('p', N); ('p', N); ('l', TW); ('e', N) ] ]
       54;
     score_update_test {|TW 'a', DW 'l', "apple"|} vanila_score
-      [
-        [ ('a', TW) ];
-        [ ('p', N) ];
-        [ ('p', N) ];
-        [ ('l', DW) ];
-        [ ('e', N) ];
-      ]
+      [ [ ('a', TW); ('p', N); ('p', N); ('l', DW); ('e', N) ] ]
       54;
+    score_update_test {|DL 'a', DW 'l', "apple"|} vanila_score
+      [ [ ('a', DL); ('p', N); ('p', N); ('l', DW); ('e', N) ] ]
+      20;
+    score_update_test {|DL 'a','p', DW 'l', "apple"|} vanila_score
+      [ [ ('a', DL); ('p', DL); ('p', N); ('l', DW); ('e', N) ] ]
+      26;
+    score_update_test {|DL 'a', TL 'p', DW 'l', "apple"|} vanila_score
+      [ [ ('a', DL); ('p', TL); ('p', N); ('l', DW); ('e', N) ] ]
+      32;
+    score_update_test {|DL 'a', TW 'l', "apple"|} vanila_score
+      [ [ ('a', DL); ('p', N); ('p', N); ('l', TW); ('e', N) ] ]
+      30;
+    score_update_test {|DL 'a','p', TW 'l', "apple"|} vanila_score
+      [ [ ('a', DL); ('p', DL); ('p', N); ('l', TW); ('e', N) ] ]
+      39;
+    score_update_test {|DL 'a', TL 'p', TW 'l', "apple"|} vanila_score
+      [ [ ('a', DL); ('p', TL); ('p', N); ('l', TW); ('e', N) ] ]
+      48;
+    score_update_test {|plain "car" and DW "cat" |} vanila_score
+      [
+        [ ('c', N); ('a', N); ('r', N) ];
+        [ ('c', N); ('a', DW); ('t', N) ];
+      ]
+      15;
+    score_update_test {|N "camel" (a bonus word)|} wbonus_score
+      [ [ ('c', N); ('a', N); ('m', N); ('e', N); ('l', N) ] ]
+      45;
   ]
 
 let draw_nletters_psize_test =
@@ -607,6 +553,7 @@ let suite =
            hand_tests;
            draw_nletters_psize_test;
            draw_nletters_hsize_test;
+           score_tests;
          ]
 
 let _ = run_test_tt_main suite
