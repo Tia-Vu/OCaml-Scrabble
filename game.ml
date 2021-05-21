@@ -163,10 +163,13 @@ let rec bonus_prompt () =
   print_endline
     "\n\
      Please enter the (valid) name of the json bonus words file you \
-     want to load.\n";
+     want to load.  Type \"None\" if you would not like any bonus \
+     words.\n";
   print_string "> ";
   let file_name = read_line () in
-  if Sys.file_exists file_name then Yojson.Basic.from_file file_name
+  if Sys.file_exists file_name then
+    Some (Yojson.Basic.from_file file_name)
+  else if file_name = "None" then None
   else bonus_prompt ()
 
 (*[size_prompt] prompts the player for the size of board they would like
@@ -227,9 +230,11 @@ let rec build_init_players bonus_words pool acc = function
    terminating the game when the turns are done.*)
 let run () =
   print_intro ();
-  let new_board = empty_board (dict_prompt ()) (size_prompt () + 1) in
-  let new_pool = init_pool () in
+  let size = size_prompt () + 1 in
+  let dictionary = dict_prompt () in
   let bonus_words = bonus_prompt () in
+  let new_board = empty_board dictionary bonus_words size in
+  let new_pool = init_pool () in
   let player_number = player_prompt () in
   let init_state =
     {
@@ -241,7 +246,6 @@ let run () =
   in
   print_pool new_pool;
   play_game init_state;
-
   print_end ();
   exit 0
 

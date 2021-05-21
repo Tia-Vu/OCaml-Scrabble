@@ -9,7 +9,7 @@ type t
 val update_score : t -> (char * Board.bonus) list list -> t
 
 (**[create json] is a new, initial score.*)
-val create : Yojson.Basic.t -> t
+val create : Yojson.Basic.t option -> t
 
 (**[get_score score] gets the integer score value [score] is holding. *)
 val get_score : t -> int
