@@ -48,22 +48,23 @@ let word_bonus bonus word_score =
 
 let apply_word_bonus word base_score =
   List.fold_left
-    (fun acc (letter, bonus) -> word_bonus bonus base_score)
+    (fun acc (letter, bonus) -> word_bonus bonus acc)
     base_score word
 
 (*Based on a custom list of bonus words, returns whether the word is a
   bonus word*)
 let is_bonus bonus word = List.mem word bonus
 
-(*Gets the base score value of a certain word with letter bonuses*)
+(*Gets the base score value of a certain word with letter bonuses
+  applied*)
 let base_word_score word =
   List.fold_left
     (fun acc (letter, bonus) ->
       acc + (letter_score letter |> apply_letter_bonus bonus))
     0 word
 
-(*Gets the value that needs to be added based on the words [words] that
-  are formed by the move*)
+(*Gets the value that needs to be added to the score based on the words
+  [words] that are formed by the move*)
 let get_added_score words =
   List.fold_left
     (fun acc word ->
@@ -72,6 +73,6 @@ let get_added_score words =
 
 (*[update_score score new_words] returns the updated score given the new
   words [new_words] formed by a move*)
-let update_score scores new_words = scores + get_added_score new_words
+let update_score score new_words = score + get_added_score new_words
 
 let to_string score = string_of_int score

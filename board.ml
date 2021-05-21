@@ -26,17 +26,15 @@ type adjacent_tiles = {
   down : tile;
 }
 
-(*TODO: Bonus should be more sophisticated *)
-
 (** [itile] is an information tile for the info_board. *)
 type itile = { bonus : bonus }
 
 type t = {
-  n : int;
   (* Dimension of the board*)
+  n : int;
   (* Take cares of tile placement on board n x n. tile_board[row][col]*)
   tile_board : tile array array;
-  (*Take cares of board info n x n (double score) TODO: someday*)
+  (*Take cares of board info n x n (double score)*)
   info_board : itile array array;
   dict : string list;
   is_empty : bool;
@@ -61,6 +59,7 @@ let get_itile (row, col) info_board n =
   if row < 0 || col < 0 || row >= n || col >= n then init_itile N
   else info_board.(row).(col)
 
+(*Returns whether a tile is occupied by a bonus already*)
 let itile_occupied itle = itle.bonus <> N
 
 let assign_bonus_tle bonus (row, col) info_board =
