@@ -49,11 +49,8 @@ let rec parse_place_word (s : string) : place_word_command =
           ( int_of_string_raise_malformed x,
             int_of_string_raise_malformed y );
         direction =
-          ( if dir = "hor" then true
-          else if dir = "ver" then false
-          else raise Malformed
-            (*TODO if dir is anything else than "hor" or "ver" then it
-              fails*) );
+          ( dir = "hor"
+          || if dir <> "ver" then raise Malformed else false );
       }
   | _ -> raise Malformed
 
