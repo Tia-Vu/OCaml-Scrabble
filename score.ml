@@ -1,22 +1,17 @@
-type t = int
+open Board
+open Yojson.Basic.Util
 
-let create () = 0
+type t = {
+  score : int;
+  bonus_words : string list;
+}
 
-let to_letter_lst word =
-  (*REMARK: The same function is in board*)
-  let rec to_letter_lst_h word letter_lst =
-    match word with
-    | "" -> List.rev letter_lst
-    | _ ->
-        to_letter_lst_h
-          (String.sub word 1 (String.length word - 1))
-          (word.[0] :: letter_lst)
-  in
-  to_letter_lst_h word []
+let bonus_words_from_json json =
+  json |> Yojson.Basic.Util.to_list
+  |> List.map (fun x -> Yojson.Basic.Util.to_string x)
 
-(*given the letter and bonus, it calculates the value of that tile
-  placement on the board and updates the score*)
-let add_bonus lttr_score bonus = failwith "unimplemented"
+let create json =
+  { score = 0; bonus_words = bonus_words_from_json json }
 
 let letter_score lttr =
   match lttr with
@@ -48,22 +43,64 @@ let letter_score lttr =
   | 'z' -> 10
   | _ -> 0
 
+let apply_letter_bonus bonus lttr_score =
+  match bonus with
+  | DL -> lttr_score * 2
+  | TL -> lttr_score * 3
+  | _ -> lttr_score
+
+let word_bonus bonus word_score =
+  match bonus with
+  | DW -> word_score * 2
+  | TW -> word_score * 3
+  | _ -> word_score
+
+let apply_word_bonus word base_score =
+  List.fold_left
+    (fun acc (letter, bonus) -> word_bonus bonus acc)
+    base_score word
+
 (*Based on a custom list of bonus words, returns whether the word is a
   bonus word*)
-let is_bonus bonus word = List.mem word bonus
+let is_bonus word t = List.mem word t.bonus_words
 
-(*Gets the score value of a certain word*)
-let word_score word =
-  let letters = to_letter_lst word in
-  List.fold_left (fun acc letter -> acc + letter_score letter) 0 letters
+(*Note similar function in test.ml*)
+let score_lst_to_word lst =
+  let rec rec_ver lst acc =
+    match lst with
+    | (h, _) :: t -> rec_ver t (Char.escaped h ^ acc)
+    | [] -> acc
+  in
+  rec_ver lst ""
 
-(*Gets the value that needs to be added based on the words [words] that
-  are formed by the move*)
-let get_added_score words =
-  List.fold_left (fun acc word -> acc + word_score word) 0 words
+let apply_bonus_words t letter_lst base_score =
+  let word = score_lst_to_word letter_lst in
+  if is_bonus word t then base_score * 5 else base_score
+
+(*Gets the base score value of a certain word with letter bonuses
+  applied*)
+let base_word_score word =
+  List.fold_left
+    (fun acc (letter, bonus) ->
+      acc + (letter_score letter |> apply_letter_bonus bonus))
+    0 word
+
+(*Gets the value that needs to be added to the score based on the words
+  [words] that are formed by the move*)
+let get_added_score t words =
+  List.fold_left
+    (fun acc word ->
+      acc
+      + ( base_word_score word |> apply_word_bonus word
+        |> apply_bonus_words t word ))
+    0 words
 
 (*[update_score score new_words] returns the updated score given the new
   words [new_words] formed by a move*)
-let update_score scores new_words = scores + get_added_score new_words
+let update_score t new_words =
+  {
+    score = t.score + get_added_score t new_words;
+    bonus_words = t.bonus_words;
+  }
 
-let to_string score = string_of_int score
+let to_string t = string_of_int t.score

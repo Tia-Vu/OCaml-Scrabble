@@ -17,13 +17,11 @@ open Pool
   easily change over time, and the tests become outdated every time the
   standard changes.
 
-  - Board: The testing plan for this module fits the general description
-  above.
-
-  - Hand, pool: pool has mutable structure, where the tiles in it are
-  removed when [Hand.draw_nletters] is called. Thus in this module we
-  draw various number of tiles (0~100 for pool and 0~10 for hand) and
-  see if the size of the pool/hand reduced as much as we expected.
+  In this module there is a randomized testing for hand and pool module.
+  pool has mutable structure, where the tiles in it are removed when
+  [Hand.draw_nletters] is called. Thus in this module we draw various
+  number of tiles (0~100 for pool and 0~10 for hand) and see if the size
+  of the pool/hand reduced as much as we expected.
 
   ********************************************************************)
 
@@ -119,9 +117,22 @@ let board_illegal_place_word_test
   assert_raises (Board.IllegalMove expected_error_msg) (fun () ->
       place_word board word coord dir)
 
+let letter_lst_to_word (lst : char list) =
+  let rec rec_ver lst acc =
+    match lst with
+    | h :: t -> rec_ver t (Char.escaped h ^ acc)
+    | [] -> acc
+  in
+  rec_ver lst ""
+
+let convert_to_word_list (lst : (char * Board.bonus) list list) =
+  lst
+  |> List.map (fun inner_lst -> List.map fst inner_lst)
+  |> List.map letter_lst_to_word
+
 (** [board_get_created_words_test name board word coord dir expected]
     constructs an OUnit test named [name] that asserts the quality of
-    [Board.get_created_words]. *)
+    [Board.get_created_words], only the words, not the bonuses. *)
 let board_get_created_words_test
     (name : string)
     (board : Board.t)
@@ -131,7 +142,7 @@ let board_get_created_words_test
     (expected : string list) : test =
   "b_get_created_words_test: " ^ name >:: fun _ ->
   assert_equal expected
-    (get_created_words board word coord dir)
+    (get_created_words board word coord dir |> convert_to_word_list)
     ~cmp:(cmp_unordered_lists String.compare)
     ~printer:(pp_list pp_string)
 

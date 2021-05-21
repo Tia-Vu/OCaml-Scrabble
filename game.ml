@@ -37,11 +37,11 @@ let rec parse_place_word (s : string) : place_word_command =
         word = w;
         start_coord = (int_of_string x, int_of_string y);
         direction =
-          (if dir = "hor" then true
+          ( if dir = "hor" then true
           else if dir = "ver" then false
           else raise Malformed
             (*TODO if dir is anything else than "hor" or "ver" then it
-              fails*));
+              fails*) );
       }
   | _ -> raise Malformed
 
@@ -78,7 +78,7 @@ let update_player_state s (n, hand, score) input =
             s with
             board = placed;
             players = (n, new_hand, new_score) :: s.players;
-          })
+          } )
 
 (*Prompts the player until a legal move has been played and returns a
   new game state with the player's move reflected.*)
@@ -135,6 +135,7 @@ let play_game s =
         let new_state_rev_players =
           { new_state with players = List.rev new_state.players }
         in
+        print_pool new_state.pool;
         print_round_end ();
         pass_rounds new_state_rev_players
           (continue_game new_state_rev_players)
@@ -147,12 +148,45 @@ let play_game s =
   of that json file.*)
 let rec dict_prompt () =
   print_endline
-    "Please enter the (valid) name of the json dictionary file you \
+    "\n\
+     Please enter the (valid) name of the json dictionary file you \
      want to load.\n";
   print_string "> ";
   let file_name = read_line () in
   if Sys.file_exists file_name then Yojson.Basic.from_file file_name
   else dict_prompt ()
+
+(*[bonus_prompt] prompts the player for the name of a json file of the
+  dictionary to be used for the current game and returns Yojson.Basic.t
+  of that json file.*)
+let rec bonus_prompt () =
+  print_endline
+    "\n\
+     Please enter the (valid) name of the json bonus words file you \
+     want to load.\n";
+  print_string "> ";
+  let file_name = read_line () in
+  if Sys.file_exists file_name then Yojson.Basic.from_file file_name
+  else dict_prompt ()
+
+(*[size_prompt] prompts the player for the size of board they would like
+  to use*)
+let rec size_prompt () =
+  print_endline
+    "\n\
+     Please enter the board size you would like to use. Typing 7 \
+     results in a 7x7 board.  Valid board sizes are from 5 to 30. \n";
+  print_string "> ";
+  let size = read_line () in
+  try
+    let n = int_of_string size in
+    if n >= 5 && n <= 30 then n
+    else (
+      print_endline "\nPlease enter a valid board size. \n";
+      size_prompt () )
+  with _ ->
+    print_endline "\nPlease enter a valid number. \n";
+    size_prompt ()
 
 let rec player_prompt () =
   print_endline
@@ -165,7 +199,7 @@ let rec player_prompt () =
     else (
       print_endline
         "\nPlease enter a number of players of at least 1. \n";
-      player_prompt ())
+      player_prompt () )
   with _ ->
     print_endline "\nPlease enter a valid number. \n";
     player_prompt ()
@@ -180,11 +214,12 @@ let read_lpts file_name =
 (*Builds a list of as many players as is passed in, each with their
   player number and a new hand and score. Precondition: passed in number
   is >= 1.*)
-let rec build_init_players pool acc = function
+let rec build_init_players bonus_words pool acc = function
   | 0 -> acc
   | n ->
-      build_init_players pool
-        ((n, fill_hand pool 7 (empty_hand ()), create ()) :: acc)
+      build_init_players bonus_words pool
+        ( (n, fill_hand pool 7 (empty_hand ()), create bonus_words)
+        :: acc )
         (n - 1)
 
 (**[run] is the main method of the Scrabble game. It initializes an
@@ -192,18 +227,19 @@ let rec build_init_players pool acc = function
    terminating the game when the turns are done.*)
 let run () =
   print_intro ();
-  let new_board = empty_board (dict_prompt ()) 25 in
+  let new_board = empty_board (dict_prompt ()) (size_prompt () + 1) in
   let new_pool = init_pool () in
+  let bonus_words = bonus_prompt () in
   let player_number = player_prompt () in
-  (*TODO: Replace 6 with user input*)
   let init_state =
     {
       board = new_board;
-      players = build_init_players new_pool [] player_number;
+      players = build_init_players bonus_words new_pool [] player_number;
       letter_points = read_lpts "letter_points.json";
       pool = new_pool;
     }
   in
+  print_pool new_pool;
   play_game init_state;
 
   print_end ();
