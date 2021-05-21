@@ -368,6 +368,18 @@ let copy_board t =
     info_board = copy_mat t.info_board;
   }
 
+let remove_bonus_tiles word start_coord info_board dir =
+  let length = String.length word in
+  let rec remove_bonus_tiles_h len (row, col) =
+    match len with
+    | 0 -> info_board
+    | _ ->
+        assign_bonus_tle N (row, col) info_board;
+        if dir then remove_bonus_tiles_h (len - 1) (row, col + 1)
+        else remove_bonus_tiles_h (len - 1) (row + 1, col)
+  in
+  remove_bonus_tiles_h length start_coord
+
 (** [place_word_no_validation t w (row,col) dir] gives a new board with
     the word placed on it. No validation check is done.*)
 let place_word_no_validation t word start_coord dir =
@@ -379,7 +391,8 @@ let place_word_no_validation t word start_coord dir =
         n = t.n;
         tile_board =
           place_word_hor (to_letter_lst word) start_coord t.tile_board;
-        info_board = t.info_board;
+        info_board =
+          remove_bonus_tiles word start_coord t.info_board dir;
         is_empty = false;
       }
   | false ->
@@ -388,7 +401,8 @@ let place_word_no_validation t word start_coord dir =
         n = t.n;
         tile_board =
           place_word_ver (to_letter_lst word) start_coord t.tile_board;
-        info_board = t.info_board;
+        info_board =
+          remove_bonus_tiles word start_coord t.info_board dir;
         is_empty = false;
       }
 
@@ -502,7 +516,7 @@ let ver_score_word t (row, col) =
   and turns them into a scoring list*)
 let get_created_words_hor t word start_coord =
   let new_t = place_word_no_validation t word start_coord true in
-  let arr = [ horizontal_word_of new_t start_coord ] in
+  let arr = [ hor_score_word new_t start_coord ] in
   let length = String.length word in
   let rec get_created_words_hor_h word_lst len (row, col) =
     if len = 0 then word_lst
@@ -510,7 +524,7 @@ let get_created_words_hor t word start_coord =
       get_created_words_hor_h word_lst (len - 1) (row, col + 1)
     else
       get_created_words_hor_h
-        (vertical_word_of new_t (row, col) :: word_lst)
+        (ver_score_word new_t (row, col) :: word_lst)
         (len - 1)
         (row, col + 1)
   in
@@ -520,7 +534,7 @@ let get_created_words_hor t word start_coord =
   and turns them into a scoring*)
 let get_created_words_ver t word start_coord =
   let new_t = place_word_no_validation t word start_coord false in
-  let arr = [ vertical_word_of new_t start_coord ] in
+  let arr = [ ver_score_word new_t start_coord ] in
   let length = String.length word in
   let rec get_created_words_ver_h word_lst len (row, col) =
     if len = 0 then word_lst
@@ -528,7 +542,7 @@ let get_created_words_ver t word start_coord =
       get_created_words_ver_h word_lst (len - 1) (row + 1, col)
     else
       get_created_words_ver_h
-        (horizontal_word_of new_t (row, col) :: word_lst)
+        (hor_score_word new_t (row, col) :: word_lst)
         (len - 1)
         (row + 1, col)
   in
@@ -541,9 +555,9 @@ let get_created_words t word start_coord dir =
   match dir with
   | true ->
       List.filter
-        (fun x -> String.length x > 1)
+        (fun x -> List.length x > 1)
         (get_created_words_hor t word start_coord)
   | false ->
       List.filter
-        (fun x -> String.length x > 1)
+        (fun x -> List.length x > 1)
         (get_created_words_ver t word start_coord)

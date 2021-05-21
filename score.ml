@@ -4,22 +4,6 @@ type t = int
 
 let create () = 0
 
-let to_letter_lst word =
-  (*REMARK: The same function is in board*)
-  let rec to_letter_lst_h word letter_lst =
-    match word with
-    | "" -> List.rev letter_lst
-    | _ ->
-        to_letter_lst_h
-          (String.sub word 1 (String.length word - 1))
-          (word.[0] :: letter_lst)
-  in
-  to_letter_lst_h word []
-
-(*given the letter and bonus, it calculates the value of that tile
-  placement on the board and updates the score*)
-let add_bonus lttr_score bonus = failwith "unimplemented"
-
 let letter_score lttr =
   match lttr with
   | 'a' -> 1
@@ -50,19 +34,41 @@ let letter_score lttr =
   | 'z' -> 10
   | _ -> 0
 
+let apply_letter_bonus bonus lttr_score =
+  match bonus with
+  | DL -> lttr_score * 2
+  | TL -> lttr_score * 3
+  | _ -> lttr_score
+
+let word_bonus bonus word_score =
+  match bonus with
+  | DW -> word_score * 2
+  | TW -> word_score * 3
+  | _ -> word_score
+
+let apply_word_bonus word base_score =
+  List.fold_left
+    (fun acc (letter, bonus) -> word_bonus bonus base_score)
+    base_score word
+
 (*Based on a custom list of bonus words, returns whether the word is a
   bonus word*)
 let is_bonus bonus word = List.mem word bonus
 
-(*Gets the score value of a certain word*)
-let word_score word =
-  let letters = to_letter_lst word in
-  List.fold_left (fun acc letter -> acc + letter_score letter) 0 letters
+(*Gets the base score value of a certain word with letter bonuses*)
+let base_word_score word =
+  List.fold_left
+    (fun acc (letter, bonus) ->
+      acc + (letter_score letter |> apply_letter_bonus bonus))
+    0 word
 
 (*Gets the value that needs to be added based on the words [words] that
   are formed by the move*)
 let get_added_score words =
-  List.fold_left (fun acc word -> acc + word_score word) 0 words
+  List.fold_left
+    (fun acc word ->
+      acc + (base_word_score word |> apply_word_bonus word))
+    0 words
 
 (*[update_score score new_words] returns the updated score given the new
   words [new_words] formed by a move*)
