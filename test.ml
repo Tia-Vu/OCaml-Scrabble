@@ -352,6 +352,24 @@ let board_tests =
       {|extend horizontal word (input only the new suffix)|}
       (place_word empty_board "pine" (10, 10) true)
       "apple" (10, 14) true [ "pineapple" ];
+    board_get_created_words_test
+      {|form a word from two words horizontal:
+       place apple between the e and t of tree and not to make eat|}
+      (place_word
+         (place_word
+            (place_word empty_board "run" (10, 11) false)
+            "tree" (10, 10) true)
+         "not" (12, 11) true)
+      "apple" (11, 13) true [ "apple"; "eat" ];
+    board_get_created_words_test
+      {|form a word from two words vertical: 
+      place apple between the e and t of tree and not to make eat|}
+      (place_word
+         (place_word
+            (place_word empty_board "run" (11, 10) true)
+            "tree" (10, 10) false)
+         "not" (11, 12) false)
+      "apple" (13, 11) false [ "apple"; "eat" ];
     board_requires_letters_test "Place a horizontal word on empty board"
       empty_board "apple" (10, 10) true
       [ 'a'; 'p'; 'p'; 'l'; 'e' ];
