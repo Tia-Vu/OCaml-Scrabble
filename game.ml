@@ -167,7 +167,7 @@ let rec bonus_prompt () =
   print_string "> ";
   let file_name = read_line () in
   if Sys.file_exists file_name then Yojson.Basic.from_file file_name
-  else dict_prompt ()
+  else bonus_prompt ()
 
 (*[size_prompt] prompts the player for the size of board they would like
   to use*)
