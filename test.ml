@@ -250,9 +250,10 @@ let score_update_test
     (score : Score.t)
     (words : (char * Board.bonus) list list)
     (expected : int) : test =
+  let rev_words = List.map List.rev words in
   let start_score = Score.get_score score in
   let updated_score =
-    Score.get_score (Score.update_score score words)
+    Score.get_score (Score.update_score score rev_words)
   in
   let increment = updated_score - start_score in
   "s_update: " ^ name >:: fun _ ->
@@ -533,7 +534,7 @@ let score_tests =
       ]
       15;
     score_update_test {|N "camel" (a bonus word)|} wbonus_score
-      [ List.rev [ ('c', N); ('a', N); ('m', N); ('e', N); ('l', N) ] ]
+      [ [ ('c', N); ('a', N); ('m', N); ('e', N); ('l', N) ] ]
       45;
   ]
 
