@@ -34,19 +34,23 @@ let read_input_move () =
 
 exception Malformed
 
+let int_of_string_raise_malformed i =
+  match int_of_string i with
+  | exception Failure _ -> raise Malformed
+  | s -> s
+
 let rec parse_place_word (s : string) : place_word_command =
   let parsed = String.split_on_char ' ' s in
   match parsed with
   | [ w; x; y; dir ] ->
       {
         word = w;
-        start_coord = (int_of_string x, int_of_string y);
+        start_coord =
+          ( int_of_string_raise_malformed x,
+            int_of_string_raise_malformed y );
         direction =
-          (if dir = "hor" then true
-          else if dir = "ver" then false
-          else raise Malformed
-            (*TODO if dir is anything else than "hor" or "ver" then it
-              fails*));
+          ( dir = "hor"
+          || if dir <> "ver" then raise Malformed else false );
       }
   | _ -> raise Malformed
 
@@ -88,7 +92,7 @@ let update_player_state s (n, hand, score, playing) input =
   | _ -> (
       match parse_place_word input with
       | exception Malformed -> raise Malformed
-      | cmd -> process_cmd s (n, hand, score, playing) cmd)
+      | cmd -> process_cmd s (n, hand, score, playing) cmd )
 
 (*Prompts the player until a legal move has been played and returns a
   new game state with the player's move reflected.*)
@@ -127,7 +131,7 @@ let rec cycle_players state = function
         print_board state.board;
         print_hand hand;
         print_scores score;
-        cycle_players (player_turn state (n, hand, score, playing)) t)
+        cycle_players (player_turn state (n, hand, score, playing)) t )
       else
         cycle_players
           {
@@ -206,7 +210,7 @@ let rec size_prompt () =
     if n >= 5 && n <= 30 then n
     else (
       print_endline "\nPlease enter a valid board size. \n";
-      size_prompt ())
+      size_prompt () )
   with _ ->
     print_endline "\nPlease enter a valid number. \n";
     size_prompt ()
@@ -222,7 +226,7 @@ let rec player_prompt () =
     else (
       print_endline
         "\nPlease enter a number of players of at least 1. \n";
-      player_prompt ())
+      player_prompt () )
   with _ ->
     print_endline "\nPlease enter a valid number. \n";
     player_prompt ()
@@ -241,8 +245,8 @@ let rec build_init_players bonus_words pool acc = function
   | 0 -> acc
   | n ->
       build_init_players bonus_words pool
-        ((n, fill_hand pool 7 (empty_hand ()), create bonus_words, true)
-        :: acc)
+        ( (n, fill_hand pool 7 (empty_hand ()), create bonus_words, true)
+        :: acc )
         (n - 1)
 
 let build_number_score_list players =

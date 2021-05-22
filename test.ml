@@ -15,11 +15,11 @@ open Pool
   the gameplay is important - not causing errors is not enough. After we
   write such tests, we evaluate the coverage of the tests using bisect,
   and if the coverage is significantly low, we add more glassbox tesing
-  so we don't get unexpected errors during the gameplay. The to_string
-  function of each module is tested via playtest and not here since
-  their correctness depends on their aesthetics, which its standard will
-  easily change over time, and the tests become outdated every time the
-  standard changes.
+  so we don't get unexpected errors during the gameplay.
+
+  The to_string function of each module is tested via playtest and not
+  here since their correctness depends on their aesthetics, which the
+  standard will easily and frequently change over time.
 
   In this module there is a randomized testing for hand and pool module.
   pool has mutable structure, where the tiles in it are removed when
@@ -467,7 +467,7 @@ let hand_tests =
 
 let vanila_score = Score.create None
 
-let bonus_json = Yojson.Basic.from_string {|["camel","cat"]|}
+let bonus_json = Yojson.Basic.from_string {|["camel","car"]|}
 
 let wbonus_score = Score.create (Some bonus_json)
 
@@ -565,6 +565,34 @@ let score_tests =
       wbonus_score
       [ [ ('c', TW); ('a', TL); ('m', N); ('e', N); ('l', N) ] ]
       165;
+    score_update_test {|plain bonus word "camel" and plain "cat" |}
+      wbonus_score
+      [
+        [ ('c', N); ('a', N); ('m', N); ('e', N); ('l', N) ];
+        [ ('c', N); ('a', N); ('t', N) ];
+      ]
+      50;
+    score_update_test {|plain bonus word "camel" and DW "cat" |}
+      wbonus_score
+      [
+        [ ('c', N); ('a', N); ('m', N); ('e', N); ('l', N) ];
+        [ ('c', N); ('a', DW); ('t', N) ];
+      ]
+      55;
+    score_update_test {|DW bonus word "camel" and plain "cat" |}
+      wbonus_score
+      [
+        [ ('c', N); ('a', DW); ('m', N); ('e', N); ('l', N) ];
+        [ ('c', N); ('a', N); ('t', N) ];
+      ]
+      95;
+    score_update_test {|TW bonus word "camel" and  DL "a" in cat" |}
+      wbonus_score
+      [
+        [ ('c', N); ('a', TW); ('m', N); ('e', N); ('l', N) ];
+        [ ('c', N); ('a', DL); ('t', N) ];
+      ]
+      141;
   ]
 
 let draw_nletters_psize_test =
