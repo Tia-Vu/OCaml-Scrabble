@@ -1,4 +1,4 @@
-MODULES=board display game score validation pool hand
+MODULES=board display game score pool hand
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
