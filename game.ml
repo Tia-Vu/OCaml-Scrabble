@@ -286,7 +286,7 @@ let declare_winner players =
    terminating the game when the turns are done.*)
 let run () =
   print_intro ();
-  let size = size_prompt () + 1 in
+  let size = size_prompt () in
   let dictionary = dict_prompt () in
   let bonus_words = bonus_prompt () in
   let new_board = empty_board dictionary bonus_words size in
