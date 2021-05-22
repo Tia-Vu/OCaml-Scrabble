@@ -59,20 +59,6 @@ let pp_list pp_elt lst =
 let pp_board board =
   board |> Board.to_string |> fun x -> "\n-\n" ^ x ^ "\n-\n"
 
-(** [cmp_set_like_lists lst1 lst2] compares two lists to see whether
-    they are equivalent set-like lists. That means checking two things.
-    First, they must both be {i set-like}, meaning that they do not
-    contain any duplicates. Second, they must contain the same elements,
-    though not necessarily in the same order.
-
-    Reference: Brought from CS3110 Spring Assignment a2*)
-let cmp_set_like_lists lst1 lst2 =
-  let uniq1 = List.sort_uniq compare lst1 in
-  let uniq2 = List.sort_uniq compare lst2 in
-  List.length lst1 = List.length uniq1
-  && List.length lst2 = List.length uniq2
-  && uniq1 = uniq2
-
 (** [cmp_unordered_lists lst1 lst2] compares two lists to see whether
     they are equivalent lists, irrelevant of their orders.*)
 let cmp_unordered_lists compare lst1 lst2 =
@@ -81,18 +67,6 @@ let cmp_unordered_lists compare lst1 lst2 =
   List.length lst1 = List.length sorted1
   && List.length lst2 = List.length sorted2
   && sorted1 = sorted2
-
-(* DEPRECATED: Board_to_string is tested through play test.
-   [board_to_string name input expected_output] constructs an OUnit test
-   named [name] that asserts the quality of [Board.to_str] with [index
-   input]. *)
-let board_to_string_test
-    (name : string)
-    (input : Board.t)
-    (expected_output : string) : test =
-  "board_to_str: " ^ name >:: fun _ ->
-  assert_equal expected_output (Board.to_string input)
-    ~printer:(fun x -> "\n-\n" ^ x ^ "\n-\n")
 
 let board_place_word_test
     (name : string)
@@ -107,10 +81,9 @@ let board_place_word_test
     ~printer:pp_board
 
 (** [board_illegal_place_word_test name board word coord dir
-    expected_error_msg]
-    constructs an OUnit test named [name] that asserts that
-    [Board.place_word] raises [Board.IllegalMove] with string
-    [expected_error_msg]. *)
+    expected_error_msg] constructs an OUnit test named [name] that
+    asserts that [Board.place_word] raises [Board.IllegalMove] with
+    string [expected_error_msg]. *)
 let board_illegal_place_word_test
     (name : string)
     (board : Board.t)
@@ -182,8 +155,8 @@ let rec create_many_draw_nletters_psize_test test_list = function
   | -1 -> test_list
   | m ->
       create_many_draw_nletters_psize_test
-        (draw_nletters_pool_size_test ("n = " ^ string_of_int m) m
-        :: test_list)
+        ( draw_nletters_pool_size_test ("n = " ^ string_of_int m) m
+        :: test_list )
         (m - 1)
 
 (** [draw_nletters_hand_size_test name n] constructs an OUnit test named
@@ -201,8 +174,8 @@ let rec create_many_draw_nletters_hsize_test test_list = function
   | -1 -> test_list
   | m ->
       create_many_draw_nletters_hsize_test
-        (draw_nletters_hand_size_test ("n = " ^ string_of_int m) m
-        :: test_list)
+        ( draw_nletters_hand_size_test ("n = " ^ string_of_int m) m
+        :: test_list )
         (m - 1)
 
 (** [hand_has_word_test name word hand expected] constructs an OUnit
