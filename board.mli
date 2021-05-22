@@ -6,7 +6,8 @@
 (** The abstract type of values representing boards. *)
 type t
 
-(**The bonus tile types*)
+(**The bonus tile types [N] is None [DL] is Double Letter [TL] is Triple
+   Letter [DW] is Double Word and [TW] is Triple Word*)
 type bonus =
   | N
   | DL

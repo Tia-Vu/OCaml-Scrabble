@@ -172,7 +172,7 @@ let rec dict_prompt () =
   print_endline
     "\n\
      Please enter the (valid) name of the json dictionary file you \
-     want to load or type \"Default\" to use the built in dictionary.\n";
+     want to load or type [Default] to use the built in dictionary.\n";
   print_string "> ";
   let file_name = read_line () in
   if Sys.file_exists file_name then Yojson.Basic.from_file file_name
@@ -182,18 +182,20 @@ let rec dict_prompt () =
 
 (*[bonus_prompt] prompts the player for the name of a json file of the
   dictionary to be used for the current game and returns Yojson.Basic.t
-  of that json file.*)
+  option of that json file.*)
 let rec bonus_prompt () =
   print_endline
     "\n\
      Please enter the (valid) name of the json bonus words file you \
-     want to load.  Type \"None\" if you would not like any bonus \
-     words.\n";
+     want to load.  Type [None] if you would not like any bonus words\n\
+     or type [Default] to use the default Camel related bonus words.\n";
   print_string "> ";
   let file_name = read_line () in
   if Sys.file_exists file_name then
     Some (Yojson.Basic.from_file file_name)
   else if file_name = "None" then None
+  else if file_name = "Default" then
+    Some (Yojson.Basic.from_file "camel_bonus.json")
   else bonus_prompt ()
 
 (*[size_prompt] prompts the player for the size of board they would like
