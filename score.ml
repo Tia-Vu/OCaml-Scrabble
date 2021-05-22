@@ -26,12 +26,6 @@ let letter_score lttr =
   | Some score -> score
   | None -> 0
 
-(* DEPRECATED: match lttr with | 'a' -> 1 | 'b' -> 3 | 'c' -> 3 | 'd' ->
-   2 | 'e' -> 1 | 'f' -> 4 | 'g' -> 2 | 'h' -> 4 | 'i' -> 1 | 'j' -> 8 |
-   'k' -> 5 | 'l' -> 1 | 'm' -> 3 | 'n' -> 1 | 'o' -> 1 | 'p' -> 3 | 'q'
-   -> 10 | 'r' -> 1 | 's' -> 1 | 't' -> 1 | 'u' -> 1 | 'v' -> 4 | 'w' ->
-   4 | 'x' -> 8 | 'y' -> 4 | 'z' -> 10 | _ -> 0 *)
-
 let apply_letter_bonus bonus lttr_score =
   match bonus with
   | DL -> lttr_score * 2
@@ -52,7 +46,7 @@ let apply_word_bonus word base_score =
 
 (*Based on a custom list of bonus words, returns whether the word is a
   bonus word*)
-let is_bonus word t = List.mem word t.bonus_words
+let is_bonus word sc = List.mem word sc.bonus_words
 
 (*Note similar function in test.ml*)
 let score_lst_to_word lst =
@@ -64,9 +58,9 @@ let score_lst_to_word lst =
   rec_ver lst ""
 
 (*Returns value of word after applying the bonus word bonus*)
-let apply_bonus_words t letter_lst base_score =
+let apply_bonus_words sc letter_lst base_score =
   let word = score_lst_to_word letter_lst in
-  if is_bonus word t then base_score * 5 else base_score
+  if is_bonus word sc then base_score * 5 else base_score
 
 (*Gets the base score value of a certain word with letter bonuses
   applied*)
@@ -78,22 +72,22 @@ let base_word_score word =
 
 (*Gets the value that needs to be added to the score based on the words
   [words] that are formed by the move*)
-let get_added_score t words =
+let get_added_score sc words =
   List.fold_left
     (fun acc word ->
       acc
-      + (base_word_score word |> apply_word_bonus word
-        |> apply_bonus_words t word))
+      + ( base_word_score word |> apply_word_bonus word
+        |> apply_bonus_words sc word ))
     0 words
 
 (*[update_score score new_words] returns the updated score given the new
   words [new_words] formed by a move*)
-let update_score t new_words =
+let update_score sc new_words =
   {
-    score = t.score + get_added_score t new_words;
-    bonus_words = t.bonus_words;
+    score = sc.score + get_added_score sc new_words;
+    bonus_words = sc.bonus_words;
   }
 
-let get_score t = t.score
+let get_score sc = sc.score
 
-let to_string t = string_of_int t.score
+let to_string sc = string_of_int sc.score
