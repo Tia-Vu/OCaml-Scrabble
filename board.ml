@@ -41,9 +41,10 @@ type itile = { bonus : bonus }
 type t = {
   (* Dimension of the board*)
   n : int;
-  (* Take cares of tile placement on board n x n. tile_board[row][col]*)
+  (* Take cares of tile placement on board n x n. Used as
+     tile_board[row][col]*)
   tile_board : tile array array;
-  (*Take cares of board info n x n (double score)*)
+  (* Take cares of board info (DL,DW, etc.) n x n *)
   info_board : itile array array;
   dict : string list;
   is_empty : bool;
@@ -67,8 +68,6 @@ let blank_tile_char = '#'
 let init_tile () = create_tile blank_tile_char (-1) (-1)
 
 let init_tile_board n = Array.make_matrix n n (init_tile ())
-
-(*Bonus tile board*)
 
 let init_itile b = { bonus = b }
 
@@ -274,131 +273,134 @@ let tile_occupied tle = tle.letter <> blank_tile_char
 (**[tiles_occupied_hor t w (row,col) length idx] is a helper function
    for tiles_occupied that checks horizontally Precondition: [(row,col)]
    must be a valid place on the board, letters is nonempty*)
-let rec tiles_occupied_hor t letters (row, col) =
-  let board_letter = (get_tile (row, col) t).letter in
+let rec tiles_occupied_hor board letters (row, col) =
+  let board_letter = (get_tile (row, col) board).letter in
   match letters with
   | [] -> false
   | h :: tail ->
       if board_letter = blank_tile_char || h = board_letter then
-        tiles_occupied_hor t tail (row, col + 1)
+        tiles_occupied_hor board tail (row, col + 1)
       else true
 
 (**Same as tiles_occupied_hor but vertical*)
-let rec tiles_occupied_ver t letters (row, col) =
-  let board_letter = (get_tile (row, col) t).letter in
+let rec tiles_occupied_ver board letters (row, col) =
+  let board_letter = (get_tile (row, col) board).letter in
   match letters with
   | [] -> false
   | h :: tail ->
       if board_letter = blank_tile_char || h = board_letter then
-        tiles_occupied_ver t tail (row + 1, col)
+        tiles_occupied_ver board tail (row + 1, col)
       else true
 
-(** [tiles_occupied t w start_coord dir] check if there are no tiles on
-    the spots that [word] is expected to be placed on, or else they must
-    be the same letter PLACEHOLDER*)
-let tiles_occupied t w start_coord dir =
-  if dir then tiles_occupied_hor t (to_letter_lst w) start_coord
-  else tiles_occupied_ver t (to_letter_lst w) start_coord
+(** [tiles_occupied board w start_coord dir] check if there are no tiles
+    on the spots that [word] is expected to be placed on, or else they
+    must be the same letter PLACEHOLDER*)
+let tiles_occupied board w start_coord dir =
+  if dir then tiles_occupied_hor board (to_letter_lst w) start_coord
+  else tiles_occupied_ver board (to_letter_lst w) start_coord
 
 (**Helper function to check if tile placement will be on the board*)
-let off_board t word (row, col) direction =
+let off_board board word (row, col) direction =
   match direction with
   | true ->
-      col + String.length word > t.n || row >= t.n || row < 0 || col < 0
+      col + String.length word > board.n
+      || row >= board.n || row < 0 || col < 0
   | false ->
-      row + String.length word > t.n || col >= t.n || col < 0 || row < 0
+      row + String.length word > board.n
+      || col >= board.n || col < 0 || row < 0
 
-(**[tiles_near_current_tile] gives whether the current tile at
-   [(row,col)] has any tiles adjacent to it Precondition: [(row, col)]
-   is a valid place on the board*)
+(**[tiles_near_current_tile board (row,col)] gives whether the current
+   tile at [(row,col)] has any tiles adjacent to it.
 
-let tiles_near_current_tile t (row, col) =
-  let adjacent = get_adjacent_tiles (row, col) t in
+   Precondition: [(row, col)] is a valid place on the board.*)
+
+let tiles_near_current_tile board (row, col) =
+  let adjacent = get_adjacent_tiles (row, col) board in
   adjacent.left.letter <> blank_tile_char
   || adjacent.right.letter <> blank_tile_char
   || adjacent.up.letter <> blank_tile_char
   || adjacent.down.letter <> blank_tile_char
 
-(**[tiles_near_current_tiles] t idx (row,col) dir gives whether there
-   are tiles adjacent to the tiles starting at the tile at [(row,col)]
-   and going [idx] in the direction [dir] (horizontal if true and
-   vertical if false)
+(**[tiles_near_current_tiles] board idx (row,col) dir gives whether
+   there are tiles adjacent to the tiles starting at the tile at
+   [(row,col)] and going [idx] in the direction [dir] (horizontal if
+   true and vertical if false)
 
    Precondition: there is a tile at [(row,col)] all the way to
    [(row,col)] + idx in the direction [dir]*)
-let rec tiles_near_current_tiles t idx (row, col) dir =
+let rec tiles_near_current_tiles board idx (row, col) dir =
   match idx with
   | 0 -> false
   | _ ->
-      if tiles_near_current_tile t (row, col) then true
+      if tiles_near_current_tile board (row, col) then true
       else if dir then
-        tiles_near_current_tiles t (idx - 1) (row, col + 1) dir
-      else tiles_near_current_tiles t (idx - 1) (row + 1, col) dir
+        tiles_near_current_tiles board (idx - 1) (row, col + 1) dir
+      else tiles_near_current_tiles board (idx - 1) (row + 1, col) dir
 
-(*[is_in_bound t coord] checks if [coord] is inbound for [t]*)
-let is_in_bound t coord =
+(*[is_in_bound board coord] checks if [coord] is inbound for [board]*)
+let is_in_bound board coord =
   let x, y = coord in
-  0 <= x && x < t.n && 0 <= y && y < t.n
+  0 <= x && x < board.n && 0 <= y && y < board.n
 
-(* [word_start_hor t start_coord] is the starting row coordinate of the
-   horizontal word that is a superset of the tile on [start_coord]*)
-let word_start_ver t start_coord =
+(* [word_start_hor board start_coord] is the starting row coordinate of
+   the horizontal word that is a superset of the tile on [start_coord]*)
+let word_start_ver board start_coord =
   let x0, y = start_coord in
   let x = ref x0 in
-  let b = t.tile_board in
+  let tb = board.tile_board in
   let _ =
-    while is_in_bound t (!x, y) && b.(!x).(y) |> tile_occupied do
+    while is_in_bound board (!x, y) && tb.(!x).(y) |> tile_occupied do
       x := !x - 1
     done
   in
   min x0 (!x + 1)
 
-(** [vertical_word_of t (row,col)] gives the maximum vertical superset
-    word that consists of the letter at [(row,col)] on [t].
+(** [vertical_word_of board (row,col)] gives the maximum vertical
+    superset word that consists of the letter at [(row,col)] on [board].
 
     Example: If [(row,col)] is at 'a' for ". . . p i n e a p p l e . ."
     , it returns "pineapple" *)
 
-let vertical_word_of t start_coord =
+let vertical_word_of board start_coord =
   let word = ref "" in
   let _ =
-    let x = ref (word_start_ver t start_coord) in
+    let x = ref (word_start_ver board start_coord) in
     let _, y = start_coord in
-    let b = t.tile_board in
-    while is_in_bound t (!x, y) && b.(!x).(y) |> tile_occupied do
-      word := !word ^ Char.escaped b.(!x).(y).letter;
+    let tb = board.tile_board in
+    while is_in_bound board (!x, y) && tb.(!x).(y) |> tile_occupied do
+      word := !word ^ Char.escaped tb.(!x).(y).letter;
       x := !x + 1
     done
   in
   !word
 
-(* [word_start_ver t start_coord] is the starting col of the vertical
-   word that is a superset of the tile on [start_coord]*)
-let word_start_hor t start_coord =
+(** [word_start_ver board start_coord] is the starting col of the
+    vertical word that is a superset of the tile on [start_coord]*)
+let word_start_hor board start_coord =
   let x, y0 = start_coord in
   let y = ref y0 in
-  let b = t.tile_board in
+  let tb = board.tile_board in
   let _ =
-    while is_in_bound t (x, !y) && b.(x).(!y) |> tile_occupied do
+    while is_in_bound board (x, !y) && tb.(x).(!y) |> tile_occupied do
       y := !y - 1
     done
   in
   min y0 (!y + 1)
 
-(** [horizontal_word_of t (row,col)] gives the maximum horizontal
-    superset word that consists of the letter at [(row,col)] on [t].
+(** [horizontal_word_of board (row,col)] gives the maximum horizontal
+    superset word that consists of the letter at [(row,col)] on [board].
 
     Example: If [(row,col)] is at 'a' for ". . . p i n e a p p l e . ."
     , it returns "pineapple" *)
 
-let horizontal_word_of t start_coord =
+let horizontal_word_of board start_coord =
   let word = ref "" in
   let _ =
-    let y = ref (word_start_hor t start_coord) in
+    let y = ref (word_start_hor board start_coord) in
     let x, _ = start_coord in
-    let b = t.tile_board in
-    while is_in_bound t (x, !y) && b.(x).(!y) |> tile_occupied do
-      word := !word ^ Char.escaped b.(x).(!y).letter;
+    let tb = board.tile_board in
+    while is_in_bound board (x, !y) && tb.(x).(!y) |> tile_occupied do
+      word := !word ^ Char.escaped tb.(x).(!y).letter;
       y := !y + 1
     done
   in
@@ -427,18 +429,18 @@ let rec place_word_ver letter_lst curr_coord tile_board =
       place_tile h curr_coord tile_board;
       place_word_ver t next_coord tile_board
 
-(** [copy_mat mat] gives a new copy of [mat], a 2d array. *)
+(** [copy_mat mat] gives a deep copy of [mat], a 2d array. *)
 let copy_mat mat =
   let n = Array.length mat in
   let copy_ith i = Array.copy mat.(i) in
   Array.init n copy_ith
 
-(** [copy_board t] gives a new copy of [t]*)
-let copy_board t =
+(** [copy_board board] gives a new copy of [board]*)
+let copy_board board =
   {
-    t with
-    tile_board = copy_mat t.tile_board;
-    info_board = copy_mat t.info_board;
+    board with
+    tile_board = copy_mat board.tile_board;
+    info_board = copy_mat board.info_board;
   }
 
 let remove_bonus_tiles word start_coord info_board dir =
@@ -453,158 +455,167 @@ let remove_bonus_tiles word start_coord info_board dir =
   in
   remove_bonus_tiles_h length start_coord
 
-(** [place_word_no_validation t w (row,col) dir] gives a new board with
-    the word placed on it. No validation check is done.*)
-let place_word_no_validation t word start_coord dir =
-  let t = copy_board t in
-  match dir with
-  | true ->
-      {
-        t with
-        n = t.n;
-        tile_board =
-          place_word_hor (to_letter_lst word) start_coord t.tile_board;
-        info_board =
-          remove_bonus_tiles word start_coord t.info_board dir;
-        is_empty = false;
-      }
-  | false ->
-      {
-        t with
-        n = t.n;
-        tile_board =
-          place_word_ver (to_letter_lst word) start_coord t.tile_board;
-        info_board =
-          remove_bonus_tiles word start_coord t.info_board dir;
-        is_empty = false;
-      }
+(** [place_word_no_validation board w (row,col) dir] gives a new board
+    with the word placed on it. No validation check is done.*)
 
-(** [place_word_no_validation_keep_info t w (row,col) dir] gives a new
-    board with the word placed on it and the info board is not changed.
-    No validation check is done.*)
-let place_word_no_validation_keep_info t word start_coord dir =
-  let t = copy_board t in
-  match dir with
-  | true ->
-      {
-        t with
-        n = t.n;
-        tile_board =
-          place_word_hor (to_letter_lst word) start_coord t.tile_board;
-        info_board = t.info_board;
-        is_empty = false;
-      }
-  | false ->
-      {
-        t with
-        n = t.n;
-        tile_board =
-          place_word_ver (to_letter_lst word) start_coord t.tile_board;
-        info_board = t.info_board;
-        is_empty = false;
-      }
+(* The function is slightly past 20 lines but it's due to the size of
+   the record so please have mercy... (it seems silly to refactor the
+   then and else part into separate functions)*)
+let place_word_no_validation board word start_coord dir =
+  let board = copy_board board in
+  if dir then
+    {
+      board with
+      n = board.n;
+      tile_board =
+        place_word_hor (to_letter_lst word) start_coord board.tile_board;
+      info_board =
+        remove_bonus_tiles word start_coord board.info_board dir;
+      is_empty = false;
+    }
+  else
+    {
+      board with
+      n = board.n;
+      tile_board =
+        place_word_ver (to_letter_lst word) start_coord board.tile_board;
+      info_board =
+        remove_bonus_tiles word start_coord board.info_board dir;
+      is_empty = false;
+    }
+
+(** [place_word_no_validation_keep_info board w (row,col) dir] gives a
+    new board with the word placed on it and the info board is not
+    changed. No validation check is done.*)
+let place_word_no_validation_keep_info board word start_coord dir =
+  let board = copy_board board in
+  if dir then
+    {
+      board with
+      n = board.n;
+      tile_board =
+        place_word_hor (to_letter_lst word) start_coord board.tile_board;
+      info_board = board.info_board;
+      is_empty = false;
+    }
+  else
+    {
+      board with
+      n = board.n;
+      tile_board =
+        place_word_ver (to_letter_lst word) start_coord board.tile_board;
+      info_board = board.info_board;
+      is_empty = false;
+    }
 
 (** Check if a placement is legal for a horizontally placed word. *)
-let placement_is_legal_hor t word start_coord =
-  let expected_t = place_word_no_validation t word start_coord true in
+let placement_is_legal_hor board word start_coord =
+  let expected_t =
+    place_word_no_validation board word start_coord true
+  in
   let _ =
-    horizontal_word_of expected_t start_coord |> check_in_dict t.dict
+    horizontal_word_of expected_t start_coord
+    |> check_in_dict board.dict
   in
   let x0, y0 = start_coord in
   let l = String.length word in
   let _ =
     for y = y0 to y0 + l - 1 do
-      vertical_word_of expected_t (x0, y) |> check_in_dict t.dict
+      vertical_word_of expected_t (x0, y) |> check_in_dict board.dict
     done
   in
   true
 
 (** Check if a placement is legal for a vertically placed word. *)
-let placement_is_legal_ver t word start_coord =
-  let expected_t = place_word_no_validation t word start_coord false in
+let placement_is_legal_ver board word start_coord =
+  let expected_t =
+    place_word_no_validation board word start_coord false
+  in
   let _ =
-    vertical_word_of expected_t start_coord |> check_in_dict t.dict
+    vertical_word_of expected_t start_coord |> check_in_dict board.dict
   in
   let x0, y0 = start_coord in
   let l = String.length word in
   let _ =
     for x = x0 to x0 + l - 1 do
-      horizontal_word_of expected_t (x, y0) |> check_in_dict t.dict
+      horizontal_word_of expected_t (x, y0) |> check_in_dict board.dict
     done
   in
   true
 
 (** Check if a placement is legal*)
-let placement_is_legal t word start_coord direction =
-  if off_board t word start_coord direction then
+let placement_is_legal board word start_coord direction =
+  if off_board board word start_coord direction then
     raise (IllegalMove "Word goes off board.")
   else ();
-  if tiles_occupied t word start_coord direction then
+  if tiles_occupied board word start_coord direction then
     raise (IllegalMove "Tile tries to place on existing tiles.")
   else ();
   if
-    (not t.is_empty)
+    (not board.is_empty)
     && not
-         (tiles_near_current_tiles t (String.length word) start_coord
-            direction)
+         (tiles_near_current_tiles board (String.length word)
+            start_coord direction)
   then raise (IllegalMove "Not near any existing tiles.")
   else ();
-  if direction then placement_is_legal_hor t word start_coord
-  else placement_is_legal_ver t word start_coord
+  if direction then placement_is_legal_hor board word start_coord
+  else placement_is_legal_ver board word start_coord
 
-let rec requires_letters_hor t letter_lst (row, col) acc =
+let rec requires_letters_hor board letter_lst (row, col) acc =
   match letter_lst with
   | [] -> acc
   | h :: lst ->
-      if get_letter (row, col) t = h then
-        requires_letters_hor t lst (row, col + 1) acc
-      else requires_letters_hor t lst (row, col + 1) (h :: acc)
+      if get_letter (row, col) board = h then
+        requires_letters_hor board lst (row, col + 1) acc
+      else requires_letters_hor board lst (row, col + 1) (h :: acc)
 
-let rec requires_letters_ver t letter_lst (row, col) acc =
+let rec requires_letters_ver board letter_lst (row, col) acc =
   match letter_lst with
   | [] -> acc
   | h :: lst ->
-      if get_letter (row, col) t = h then
-        requires_letters_ver t lst (row + 1, col) acc
-      else requires_letters_ver t lst (row + 1, col) (h :: acc)
+      if get_letter (row, col) board = h then
+        requires_letters_ver board lst (row + 1, col) acc
+      else requires_letters_ver board lst (row + 1, col) (h :: acc)
 
-let requires_letters t word start_coord direction =
+let requires_letters board word start_coord direction =
   if direction then
-    requires_letters_hor t (to_letter_lst word) start_coord []
-  else requires_letters_ver t (to_letter_lst word) start_coord []
+    requires_letters_hor board (to_letter_lst word) start_coord []
+  else requires_letters_ver board (to_letter_lst word) start_coord []
 
-let place_word t word start_coord direction =
-  match placement_is_legal t word start_coord direction with
-  | true -> place_word_no_validation t word start_coord direction
+let place_word board word start_coord direction =
+  match placement_is_legal board word start_coord direction with
+  | true -> place_word_no_validation board word start_coord direction
   | false -> raise (IllegalMove "Can't place word.")
 
 (* Score stuff *)
 
-let hor_score_word t (row, col) =
-  let start_col = word_start_hor t (row, col) in
+let hor_score_word board (row, col) =
+  let start_col = word_start_hor board (row, col) in
   let rec hor_score_word_h (row, col) word_lst =
     if
-      is_in_bound t (row, col) && tile_occupied t.tile_board.(row).(col)
+      is_in_bound board (row, col)
+      && tile_occupied board.tile_board.(row).(col)
     then
       hor_score_word_h
         (row, col + 1)
-        ( ( t.tile_board.(row).(col).letter,
-            t.info_board.(row).(col).bonus )
+        ( ( board.tile_board.(row).(col).letter,
+            board.info_board.(row).(col).bonus )
         :: word_lst )
     else word_lst
   in
   hor_score_word_h (row, start_col) []
 
-let ver_score_word t (row, col) =
-  let start_row = word_start_ver t (row, col) in
+let ver_score_word board (row, col) =
+  let start_row = word_start_ver board (row, col) in
   let rec ver_score_word_h (row, col) word_lst =
     if
-      is_in_bound t (row, col) && tile_occupied t.tile_board.(row).(col)
+      is_in_bound board (row, col)
+      && tile_occupied board.tile_board.(row).(col)
     then
       ver_score_word_h
         (row + 1, col)
-        ( ( t.tile_board.(row).(col).letter,
-            t.info_board.(row).(col).bonus )
+        ( ( board.tile_board.(row).(col).letter,
+            board.info_board.(row).(col).bonus )
         :: word_lst )
     else word_lst
   in
@@ -612,15 +623,15 @@ let ver_score_word t (row, col) =
 
 (*Gets all words formed by the horizontal move including 1 letter words
   and turns them into a scoring list*)
-let get_created_words_hor t word start_coord =
+let get_created_words_hor board word start_coord =
   let new_t =
-    place_word_no_validation_keep_info t word start_coord true
+    place_word_no_validation_keep_info board word start_coord true
   in
   let arr = [ hor_score_word new_t start_coord ] in
   let length = String.length word in
   let rec get_created_words_hor_h word_lst len (row, col) =
     if len = 0 then word_lst
-    else if tile_occupied (get_tile (row, col) t) then
+    else if tile_occupied (get_tile (row, col) board) then
       get_created_words_hor_h word_lst (len - 1) (row, col + 1)
     else
       get_created_words_hor_h
@@ -632,15 +643,15 @@ let get_created_words_hor t word start_coord =
 
 (*Gets all words formed by the vertical move including 1 letter words
   and turns them into a scoring*)
-let get_created_words_ver t word start_coord =
+let get_created_words_ver board word start_coord =
   let new_t =
-    place_word_no_validation_keep_info t word start_coord false
+    place_word_no_validation_keep_info board word start_coord false
   in
   let arr = [ ver_score_word new_t start_coord ] in
   let length = String.length word in
   let rec get_created_words_ver_h word_lst len (row, col) =
     if len = 0 then word_lst
-    else if tile_occupied (get_tile (row, col) t) then
+    else if tile_occupied (get_tile (row, col) board) then
       get_created_words_ver_h word_lst (len - 1) (row + 1, col)
     else
       get_created_words_ver_h
@@ -653,13 +664,13 @@ let get_created_words_ver t word start_coord =
 (*Precondition: the placement is legal, so all words longer than 1
   letter generated by this move are valid words, and the move has not
   been played *)
-let get_created_words t word start_coord dir =
+let get_created_words board word start_coord dir =
   match dir with
   | true ->
       List.filter
         (fun x -> List.length x > 1)
-        (get_created_words_hor t word start_coord)
+        (get_created_words_hor board word start_coord)
   | false ->
       List.filter
         (fun x -> List.length x > 1)
-        (get_created_words_ver t word start_coord)
+        (get_created_words_ver board word start_coord)
