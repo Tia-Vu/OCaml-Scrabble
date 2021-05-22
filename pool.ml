@@ -2,9 +2,6 @@ type t = { mutable letters : char list }
 
 exception DrawFromEmpty
 
-(*TODO: should we get rid of formatting...?*)
-
-(** Reference from https://scrabble.hasbro.com/en-us/faq*)
 let init_pool () =
   let _ = Random.self_init () in
   {
@@ -13,13 +10,6 @@ let init_pool () =
       |> Yojson.Basic.Util.to_list
       |> List.map (fun x -> (Yojson.Basic.Util.to_string x).[0]);
   }
-
-(* (** [remove_nth_tr] is the tail recursion version of [remove_nth]*)
-   let rec remove_nth_tr front (h :: back) = function | 0 -> List.rev
-   front @ back | n -> if back = [] then failwith "n out of bounds" else
-   remove_nth_tr (h :: front) back (n - 1)
-
-   let remove_nth n lst = remove_nth_tr [] lst n*)
 
 (** [remove_nth n lst] gives a list with the [n]th element removed.*)
 let remove_nth n lst =
