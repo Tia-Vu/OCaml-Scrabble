@@ -1,7 +1,7 @@
 (** Representation of a player's hand in the game.*)
 open Pool
 
-(** The abstract type of values represnting a plyaer's hand.*)
+(** The abstract type of values represnting a player's hand.*)
 type t = char list
 
 (** [empty_hand ()] gives an empty hand.*)
