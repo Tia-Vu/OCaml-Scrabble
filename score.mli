@@ -10,14 +10,10 @@ type t
     Requires: Each word in [words] is expected to be reverse in order
     ex) for "camel" it should be
     [('l',N);('e',N);('m',N);('a',N);('c',N)] .*)
-
 val update_score : t -> (char * Board.bonus) list list -> t
 
 (**[create json] is a new, initial score.*)
 val create : Yojson.Basic.t option -> t
-
-(**[get_score score] gets the integer score value [score] is holding. *)
-val get_score : t -> int
 
 (**[get_score score] gets the integer score value [score] is holding. *)
 val get_score : t -> int
