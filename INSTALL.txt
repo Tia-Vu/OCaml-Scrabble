@@ -1,7 +1,10 @@
 1) To run the game type:
 make play
-2) Then the game will prompt you to input the file name of the dictionary to use. We recommend our own dictionary, named "dictionary.json". So, type:
-dictionary.json
-3) Then it will prompt you to place a word with the letters in your hand. Place a word with the format {word} {row} {column} {"hor"/"ver"}. (row column starts from 0, top left). 
-4) Now try placing more words! They have to be connected to the existing tiles (as scrabble does!). The points will also be updated as you place the words.
-5) For now the game runs forever. Press 'ctrl-c' or 'ctrl-d' to quit. 
+2) The game will prompt you to input the file name of the dictionary to use. You could type "Default" to use the default dictionary we provide. 
+3) The game will prompt you to input the file name for bnous words to use. You could again type "Default" to use the default bonus words we provide. 
+3) The game will prompt you to input the number of players playing the game. 
+4) Now enojy the game! You can do one of the following three actions.
+  a) place a word with the format {word} {row} {column} {"hor"/"ver"} (row column starts from 0, top left). 
+  b) input "Draw" to discard the hand and draw a new one.
+  c) input "Quit" if you don't want to play the game anymore.
+5) After every player inputs "Quit", the game will come to an end, and announce the winner(s)!
