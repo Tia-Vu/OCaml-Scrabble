@@ -60,20 +60,20 @@ let print_end () = print_endline "\nThank you for playing!\n"
 let print_winner score = function
   | [ n ] ->
       print_endline
-        ("\nThe winner is player " ^ string_of_int n ^ " with score "
-       ^ string_of_int score ^ "!")
+        ( "\nThe winner is player " ^ string_of_int n ^ " with score "
+        ^ string_of_int score ^ "!" )
   | [ fst; snd ] ->
       print_endline
-        ("\nThe winners are players " ^ string_of_int fst ^ " and "
-       ^ string_of_int snd ^ " with score " ^ string_of_int score ^ "!"
+        ( "\nThe winners are players " ^ string_of_int fst ^ " and "
+        ^ string_of_int snd ^ " with score " ^ string_of_int score ^ "!"
         )
   | lst ->
       print_endline
-        ("\nThe winners are players "
+        ( "\nThe winners are players "
         ^ List.fold_left
             (fun acc x -> acc ^ string_of_int x ^ ", ")
             "" lst
-        ^ " with score " ^ string_of_int score ^ "!")
+        ^ " with score " ^ string_of_int score ^ "!" )
 
 let print_pool p =
   print_endline ("\nLetter Pool: " ^ Pool.to_string p ^ " tiles left.")

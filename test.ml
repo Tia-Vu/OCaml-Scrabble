@@ -7,9 +7,9 @@ open Pool
 
   Test Plan
 
-  The Game module is tested via playtest, as the interaction on the
-  command line is the core experience of the module. All other modules
-  are tested by both unit tests and playtest.
+  The Game module and Display module is tested via playtest, as the
+  interaction on the command line is the core experience of the modules.
+  All other modules are tested by both unit tests and playtest.
 
   We mainly use blackbox testing as evaluating the actual edge cases in
   the gameplay is important - not causing errors is not enough. After we

@@ -142,6 +142,7 @@ let get_adjacent_tiles (row, col) t =
 let rec space_tr acc = function
   | 0 -> acc
   | len -> space_tr (acc ^ " ") (len - 1)
+  [@@coverage off]
 
 (** [space len] is a space with length of [len].*)
 let space len = space_tr "" len
@@ -153,6 +154,7 @@ let row_to_string spacing row =
   let add_letter str t = str ^ space ^ Char.escaped t.letter in
   let spaced_str = Array.fold_left add_letter "" row in
   String.sub spaced_str spacing (String.length spaced_str - spacing)
+  [@@coverage off]
 
 (** [formatted_int i] is string representation of [i] with two digits.
     Example: 1 becomes "01", 12 becomes "12" Remark: The length of
@@ -160,6 +162,7 @@ let row_to_string spacing row =
     functions*)
 let formatted_int i =
   string_of_int i |> fun s -> if String.length s = 1 then "0" ^ s else s
+  [@@coverage off]
 
 (**[col_indices_row_string n] is the first row in [to_string] which
    marks the indices of the 0th to the ([n]-1)th column. *)
@@ -169,6 +172,7 @@ let col_indices_row_string n =
     | n -> rec_tr (i + 1) (acc ^ formatted_int i ^ " ") (n - 1)
   in
   rec_tr 0 "" n
+  [@@coverage off]
 
 let to_string b =
   let spacing = 2 in
@@ -184,6 +188,7 @@ let to_string b =
   ^ col_indices_row_string (Array.length rows)
   ^ "\n"
   ^ String.sub string_of_rows 1 (String.length string_of_rows - 1)
+  [@@coverage off]
 
 let bonus_to_color bon =
   match bon with
@@ -204,6 +209,7 @@ let extract_ready_to_print_row
       ([ itile_to_color itil ], Char.escaped til.letter ^ space spacing))
     tb ib
   |> Array.to_list
+  [@@coverage off]
 
 let extract_ready_to_print_rows spacing b =
   Array.map2
@@ -211,20 +217,24 @@ let extract_ready_to_print_rows spacing b =
     b.tile_board b.info_board
   |> Array.mapi (fun i row ->
          ([], formatted_int i ^ space spacing) :: row)
+  [@@coverage off]
 
 let print_ready_to_print_row row =
   List.fold_left
     (fun _ (styles, str) -> ANSITerminal.print_string styles str)
     () row;
   print_string [] "\n"
+  [@@coverage off]
 
 let print_ready_to_print_rows rows =
   for i = 0 to Array.length rows - 1 do
     print_ready_to_print_row rows.(i)
   done
+  [@@coverage off]
 
 let print_col_indices_row spacing n =
   print_string [] (space (spacing * 2) ^ col_indices_row_string n)
+  [@@coverage off]
 
 let print_legend () =
   print_string [ bonus_to_color N ] (string_of_bonus N ^ " ");
@@ -232,6 +242,7 @@ let print_legend () =
   print_string [ bonus_to_color TL ] (string_of_bonus TL ^ " ");
   print_string [ bonus_to_color DW ] (string_of_bonus DW ^ " ");
   print_string [ bonus_to_color TW ] (string_of_bonus TW ^ " ")
+  [@@coverage off]
 
 let print_board b =
   let spacing = 2 in
@@ -242,6 +253,7 @@ let print_board b =
   print_string [] "\n";
   print_ready_to_print_rows ready_to_print_rows;
   print_legend ()
+  [@@coverage off]
 
 (** Helper function to check if word is in dictionary*)
 let word_in_dict dict word = List.mem word dict

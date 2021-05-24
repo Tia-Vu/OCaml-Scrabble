@@ -90,4 +90,4 @@ let update_score sc new_words =
 
 let get_score sc = sc.score
 
-let to_string sc = string_of_int sc.score
+let to_string sc = string_of_int sc.score [@@coverage off]

@@ -97,3 +97,4 @@ let to_string hand =
       List.fold_left (fun str c -> str ^ ", " ^ Char.escaped c) "" hand
     in
     String.sub s 1 (String.length s - 1)
+  [@@coverage off]

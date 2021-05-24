@@ -36,4 +36,4 @@ let draw_letter pool =
   pool.letters <- remove_nth i pool.letters;
   drawn_letter
 
-let to_string pool = string_of_int (size pool)
+let to_string pool = string_of_int (size pool) [@@coverage off]
