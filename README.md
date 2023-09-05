@@ -4,7 +4,9 @@ Everyone likes camels and scrabble. A terminal based scrabble like game with som
 This project was written for for a CS 3110 and submitted for a Final Project. Project was completed by:
 
 Sophia Chen (MSE 23')
+
 Sunwook Kim (CS 22')
+
 Tia Vu (CS 22')
 
 Sprint Goals are outlined below.
